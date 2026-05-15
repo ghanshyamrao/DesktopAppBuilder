@@ -1,0 +1,115 @@
+{
+  "name": "webtodesktop-builder",
+  "version": "1.0.0",
+  "description": "WebToDesktop Builder — convert any website into a Windows desktop application.",
+  "main": "dist-electron/main.js",
+  "author": "Ghanshyam Rao",
+  "license": "MIT",
+  "scripts": {
+    "dev": "concurrently -k -n vite,electron -c blue,magenta \"npm run dev:vite\" \"npm run dev:electron\"",
+    "dev:vite": "vite",
+    "dev:electron": "wait-on http://localhost:5173 && tsc -p electron/tsconfig.json && cross-env NODE_ENV=development electron .",
+    "build:renderer": "tsc -p tsconfig.json && vite build",
+    "build:electron": "tsc -p electron/tsconfig.json",
+    "build": "npm run build:renderer && npm run build:electron",
+    "prepare:installer-assets": "node scripts/prepare-installer-assets.cjs",
+    "package": "npm run build && npm run prepare:installer-assets && electron-builder",
+    "package:win": "npm run build && npm run prepare:installer-assets && electron-builder --win",
+    "electron:build": "npm run setup:runtime && npm run build && npm run prepare:installer-assets && node scripts/clean-electron.cjs && electron-builder",
+    "setup:runtime": "node scripts/fetch-node-runtime.cjs",
+    "start": "electron .",
+    "kill": "taskkill /f /im electron.exe /t & taskkill /f /im node.exe /t"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.95.0",
+    "@radix-ui/react-dialog": "^1.1.15",
+    "@radix-ui/react-dropdown-menu": "^2.1.16",
+    "@radix-ui/react-scroll-area": "^1.2.10",
+    "@radix-ui/react-slot": "^1.2.4",
+    "@radix-ui/react-tabs": "^1.1.13",
+    "@radix-ui/react-tooltip": "^1.2.8",
+    "clsx": "^2.1.1",
+    "dotenv": "^16.4.5",
+    "framer-motion": "^12.38.0",
+    "fs-extra": "^11.2.0",
+    "jimp": "^1.6.0",
+    "lucide-react": "^0.460.0",
+    "@paddle/paddle-node-sdk": "^2.0.0",
+    "nanoid": "^3.3.12",
+    "posthog-js": "^1.372.10",
+    "posthog-node": "^5.21.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "tailwind-merge": "^3.5.0",
+    "zustand": "^5.0.1"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.4",
+    "@types/node": "^22.9.0",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.3",
+    "autoprefixer": "^10.4.20",
+    "concurrently": "^9.1.0",
+    "cross-env": "^7.0.3",
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8",
+    "png-to-ico": "^3.0.1",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.15",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.11",
+    "wait-on": "^8.0.1"
+  },
+  "build": {
+    "appId": "com.webtodesktop.builder",
+    "productName": "WebToDesktop Builder",
+    "files": [
+      "dist/**/*",
+      "dist-electron/**/*",
+      "templates/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "templates",
+        "to": "templates"
+      },
+      {
+        "from": "vendor/node-win",
+        "to": "node-win",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "google-oauth.json",
+        "to": "google-oauth.json"
+      },
+      {
+        "from": ".env",
+        "to": ".env"
+      }
+    ],
+    "directories": {
+      "output": "release"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "build/icon.png"
+    },
+    "nsis": {
+      "installerIcon": "build/installerIcon.ico",
+      "uninstallerIcon": "build/uninstallerIcon.ico",
+      "installerHeaderIcon": "build/installerIcon.ico",
+      "installerHeader": "build/installerHeader.bmp",
+      "installerSidebar": "build/installerSidebar.bmp",
+      "uninstallerSidebar": "build/uninstallerSidebar.bmp"
+    },
+    "mac": {
+      "target": "dmg"
+    },
+    "linux": {
+      "target": "AppImage"
+    }
+  }
+}

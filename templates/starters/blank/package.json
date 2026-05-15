@@ -1,0 +1,23 @@
+{
+  "name": "starter-blank",
+  "productName": "App",
+  "version": "1.0.0",
+  "description": "A blank Electron starter — minimal HTML/CSS/JS, no build chain.",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.web2desktop.starter.blank",
+    "productName": "App",
+    "directories": { "output": "dist" },
+    "files": ["main.js", "preload.js", "index.html", "app.js", "config.json", "icon.*", "package.json"],
+    "win":   { "target": "nsis",     "icon": "icon.ico" },
+    "mac":   { "target": "dmg",      "icon": "icon.icns" },
+    "linux": { "target": "AppImage", "icon": "icon.png" }
+  }
+}

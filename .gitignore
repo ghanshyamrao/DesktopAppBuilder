@@ -1,0 +1,36 @@
+node_modules
+dist
+dist-electron
+release
+projects
+builds
+vendor
+.vscode
+*.log
+.DS_Store
+
+# OAuth client credentials — never commit these.
+google-oauth.json
+client_secret_*.json
+.env
+
+# Claude Code MCP config embeds the Stripe secret key. Never commit.
+.mcp.json
+
+# Local Claude Code workspace state (per-machine, not project source).
+.claude/
+
+# electron-builder outputs (regenerated locally; too big for git).
+build/
+buildReleases/
+
+# Vendored asset downloads (zips + extracted folders).
+*.zip
+banani-ui-export/
+icons8-studentvue-ios-17-filled/
+
+# Installers / binaries.
+*.exe
+
+# Stripe 2FA backup recovery code — sensitive, do not commit.
+stripe_backup_code*.txt

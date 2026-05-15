@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Terms of Service — TooDesktop</title>
+<meta name="description" content="Terms of Service for TooDesktop — the rules that govern your use of our website, builder, and desktop apps." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="icon" type="image/png" href="logo.png" />
+<style>
+  :root,
+  [data-theme="dark"] {
+    --bg: #0b0b0f;
+    --bg-2: #131319;
+    --surface: rgba(22, 23, 30, 0.55);
+    --border: rgba(255, 255, 255, 0.08);
+    --border-strong: rgba(255, 255, 255, 0.16);
+    --text: #f5f5f7;
+    --text-mut: rgba(245, 245, 247, 0.62);
+    --text-dim: rgba(245, 245, 247, 0.4);
+    --accent-blue: #5b9dff;
+    --accent-violet: #a78bfa;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Inter", -apple-system, "Segoe UI", system-ui, sans-serif;
+    font-size: 15px; line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  a { color: var(--accent-blue); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .wrap-narrow { max-width: 820px; margin: 0 auto; padding: 0 24px; }
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+  /* Ambient mesh */
+  .mesh {
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background:
+      radial-gradient(60% 40% at 10% -10%, rgba(167,139,250,0.18) 0%, transparent 60%),
+      radial-gradient(45% 35% at 100% 0%, rgba(34,211,238,0.10) 0%, transparent 60%),
+      radial-gradient(50% 45% at 50% 110%, rgba(91,157,255,0.12) 0%, transparent 60%);
+  }
+
+  /* Nav */
+  .nav {
+    position: sticky; top: 0; z-index: 50;
+    backdrop-filter: blur(14px);
+    background: rgba(11, 11, 15, 0.72);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-inner {
+    display: flex; align-items: center; justify-content: space-between;
+    height: 64px;
+  }
+  .brand {
+    display: flex; align-items: center; gap: 10px;
+    font-weight: 700; font-size: 15px; color: var(--text);
+  }
+  .brand:hover { text-decoration: none; }
+  .brand-mark { width: 26px; height: 26px; border-radius: 7px; }
+  .nav-back {
+    font-size: 14px; color: var(--text-mut);
+  }
+  .nav-back:hover { color: var(--text); text-decoration: none; }
+
+  /* Page header */
+  main { position: relative; z-index: 1; }
+  .legal-head {
+    padding: 72px 0 32px;
+    text-align: center;
+  }
+  .eyebrow {
+    display: inline-block;
+    font-size: 12px; font-weight: 600;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--accent-violet);
+    padding: 6px 12px;
+    border: 1px solid rgba(167, 139, 250, 0.3);
+    border-radius: 999px;
+    margin-bottom: 18px;
+  }
+  .legal-head h1 {
+    font-size: clamp(34px, 5vw, 48px);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    margin-bottom: 14px;
+    background: linear-gradient(135deg, #f5f5f7 0%, #a78bfa 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .meta { color: var(--text-dim); font-size: 14px; }
+
+  /* Prose */
+  .prose {
+    padding: 24px 0 96px;
+    color: var(--text);
+  }
+  .prose h2 {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin: 44px 0 14px;
+    color: var(--text);
+  }
+  .prose h2:first-child { margin-top: 0; }
+  .prose h3 {
+    font-size: 17px;
+    font-weight: 600;
+    margin: 28px 0 10px;
+    color: var(--text);
+  }
+  .prose p { color: var(--text-mut); margin-bottom: 14px; }
+  .prose ul, .prose ol {
+    color: var(--text-mut);
+    margin: 0 0 16px 22px;
+  }
+  .prose li { margin-bottom: 8px; }
+  .prose strong { color: var(--text); font-weight: 600; }
+  .prose code {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 13px;
+    padding: 2px 6px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+  }
+  .prose hr {
+    border: 0;
+    border-top: 1px solid var(--border);
+    margin: 40px 0;
+  }
+
+  /* Footer */
+  footer.bottom {
+    border-top: 1px solid var(--border);
+    background: rgba(11, 11, 15, 0.6);
+    padding: 36px 0;
+    position: relative; z-index: 1;
+  }
+  .foot-row {
+    display: flex; flex-wrap: wrap; gap: 16px;
+    align-items: center; justify-content: space-between;
+    color: var(--text-dim); font-size: 13.5px;
+  }
+  .foot-links { display: flex; flex-wrap: wrap; gap: 18px; }
+  .foot-links a { color: var(--text-mut); }
+  .foot-links a:hover { color: var(--text); text-decoration: none; }
+</style>
+</head>
+<body>
+<div class="mesh"></div>
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a href="index.html" class="brand">
+      <img src="logo.png" alt="TooDesktop" class="brand-mark" />
+      <span>TooDesktop</span>
+    </a>
+    <a href="index.html" class="nav-back">← Back to home</a>
+  </div>
+</nav>
+
+<main>
+  <div class="wrap-narrow">
+    <header class="legal-head">
+      <span class="eyebrow">Legal</span>
+      <h1>Terms of Service</h1>
+      <p class="meta">Last updated: May 14, 2026</p>
+    </header>
+
+    <article class="prose">
+      <p>Welcome to TooDesktop. These Terms of Service ("Terms") govern your access to and use of the TooDesktop website, desktop builder application, and related services (collectively, the "Service"). By creating an account, downloading the builder, or using the Service in any way, you agree to be bound by these Terms. If you do not agree, do not use the Service.</p>
+
+      <h2>1. Who we are</h2>
+      <p>TooDesktop is a visual builder that wraps any website into a native Electron desktop app for Windows, macOS, and Linux. References in these Terms to "we", "us", or "our" mean the operator of TooDesktop. References to "you" or "your" mean the person or entity using the Service.</p>
+
+      <h2>2. Eligibility & accounts</h2>
+      <p>You must be at least 16 years old (or the age of digital consent in your country) to use the Service. When you create an account, you agree to:</p>
+      <ul>
+        <li>Provide accurate, current information and keep it up to date.</li>
+        <li>Keep your password and credentials confidential.</li>
+        <li>Take responsibility for all activity that occurs under your account.</li>
+        <li>Notify us promptly if you suspect any unauthorized use.</li>
+      </ul>
+      <p>We may suspend or terminate accounts that violate these Terms.</p>
+
+      <h2>3. The Service</h2>
+      <p>TooDesktop lets you configure a desktop application (icon, theme, window options, etc.), pointed at a URL or web app you control, and produces installer files you can distribute. You are responsible for the content of any URL or app you wrap and for any code you add through our customization tools.</p>
+
+      <h2>4. Acceptable use</h2>
+      <p>You agree not to use the Service to build, distribute, or facilitate:</p>
+      <ul>
+        <li>Anything illegal under the laws of your jurisdiction or ours.</li>
+        <li>Malware, spyware, ransomware, or other malicious software.</li>
+        <li>Apps that infringe intellectual property rights of others.</li>
+        <li>Apps that scrape, mirror, or wrap a website without that site's permission, where such permission is required.</li>
+        <li>Apps designed to harass, defraud, defame, or harm minors.</li>
+        <li>Attacks against the Service itself, including reverse engineering for the purpose of circumventing license checks, automated abuse, or attempts to disrupt availability.</li>
+      </ul>
+      <p>We reserve the right to refuse, suspend, or terminate Service for any account that violates this section.</p>
+
+      <h2>5. Plans, billing & payments</h2>
+      <p>Paid plans are billed in advance on a monthly or annual basis, depending on the plan you choose. Prices, features, and limits are described on our pricing page and may change with reasonable notice. By subscribing, you authorize us (and our payment processor) to charge your payment method on each renewal date until you cancel.</p>
+      <p>Payments are processed by <strong>Stripe</strong>. We do not store full card numbers on our servers. Your use of Stripe is also governed by Stripe's own terms and privacy policy.</p>
+      <p>You can cancel your subscription at any time from your account settings; the cancellation takes effect at the end of the current billing period.</p>
+
+      <h2>6. Refunds</h2>
+      <p>Our refund terms are described in our <a href="refund.html">Refund Policy</a>, which forms part of these Terms.</p>
+
+      <h2>7. License to use TooDesktop</h2>
+      <p>Subject to your compliance with these Terms and payment of any applicable fees, we grant you a limited, non-exclusive, non-transferable, revocable license to use the Service to build, package, and distribute desktop applications.</p>
+      <p>We retain all right, title, and interest in and to the Service, including the builder application, website, branding, and all underlying software. Nothing in these Terms transfers any of our intellectual property to you, other than the license expressly granted above.</p>
+
+      <h2>8. Your apps & content</h2>
+      <p>You own the apps you build, the content you put in them, the brand assets you upload, and any URL/web app you wrap. By using the Service, you grant us a limited license to process this content solely as needed to operate the Service (for example, to compile installers, store project files, and display them in your dashboard).</p>
+      <p>You are solely responsible for ensuring you have the rights to any content, logos, code, or URLs you use in your apps.</p>
+
+      <h2>9. Third-party services</h2>
+      <p>The Service integrates with third-party providers including Google (sign-in), Stripe (payments), and various hosting and analytics providers. Your use of those services is subject to their own terms. We are not responsible for third-party services or content.</p>
+
+      <h2>10. Disclaimers</h2>
+      <p>The Service is provided <strong>"as is" and "as available"</strong>, without warranties of any kind, whether express or implied, including warranties of merchantability, fitness for a particular purpose, non-infringement, or that the Service will be uninterrupted or error-free. You use the Service at your own risk.</p>
+
+      <h2>11. Limitation of liability</h2>
+      <p>To the maximum extent permitted by law, in no event will TooDesktop, its operators, affiliates, employees, or contractors be liable for any indirect, incidental, special, consequential, or punitive damages, or any loss of profits, data, goodwill, or business opportunity, arising out of or related to your use of the Service.</p>
+      <p>Our total aggregate liability for any claim arising out of or relating to the Service will not exceed the greater of (a) the amount you paid us in the twelve (12) months immediately before the event giving rise to the claim, or (b) USD 50.</p>
+
+      <h2>12. Indemnification</h2>
+      <p>You agree to defend, indemnify, and hold harmless TooDesktop and its operators from any claims, damages, liabilities, and expenses (including reasonable legal fees) arising from: (a) your use of the Service; (b) your violation of these Terms; (c) the content, code, or URLs you wrap with the Service; or (d) your violation of any law or third-party right.</p>
+
+      <h2>13. Termination</h2>
+      <p>You can stop using the Service at any time by cancelling your subscription and deleting your account. We can suspend or terminate your access at any time, with or without notice, if we reasonably believe you have violated these Terms, are creating a risk to the Service or other users, or for any other reason permitted by law. Sections that by their nature should survive termination (including payment obligations, disclaimers, limitations of liability, and indemnification) will survive.</p>
+
+      <h2>14. Changes to the Service or these Terms</h2>
+      <p>We may update the Service, change features, or modify these Terms from time to time. If we make a material change, we'll notify you by updating the "Last updated" date above and, where appropriate, by email or in-app notice. Continued use of the Service after a change means you accept the updated Terms.</p>
+
+      <h2>15. Governing law</h2>
+      <p>These Terms are governed by the laws of the jurisdiction in which TooDesktop is operated, without regard to its conflict of laws rules. You and we agree to submit to the exclusive jurisdiction of the competent courts in that jurisdiction for any disputes arising out of or related to these Terms or the Service.</p>
+
+      <h2>16. Contact</h2>
+      <p>Questions about these Terms? Reach us at <a href="mailto:support@toodesktop.com">support@toodesktop.com</a>.</p>
+    </article>
+  </div>
+</main>
+
+<footer class="bottom">
+  <div class="wrap foot-row">
+    <div>© 2026 TooDesktop. All rights reserved.</div>
+    <div class="foot-links">
+      <a href="index.html">Home</a>
+      <a href="terms.html">Terms</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="refund.html">Refund</a>
+    </div>
+  </div>
+</footer>
+</body>
+</html>

@@ -1,0 +1,19 @@
+{
+  "name": "Web2App",
+  "url": "https://example.com",
+  "window": {
+    "width": 1280,
+    "height": 800,
+    "resizable": true,
+    "fullscreen": false,
+    "centerOnLaunch": true,
+    "rememberState": true
+  },
+  "security": {
+    "contextIsolation": true,
+    "nodeIntegration": false,
+    "disableContextMenu": false,
+    "enableDevToolsInProduction": false,
+    "customUserAgent": ""
+  }
+}

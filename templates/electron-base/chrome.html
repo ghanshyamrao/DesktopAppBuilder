@@ -1,0 +1,363 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline'; img-src 'self' data:;">
+<title>App</title>
+<!-- theme.css is generated per build by Web2App Builder. It defines the
+     --w2a-* CSS variables consumed below. --w2a-frame controls the LAYOUT
+     swap (mac lights vs windows controls vs frameless). -->
+<link rel="stylesheet" href="theme.css">
+<style>
+  /* ---------- defaults (overridden by theme.css if present) ---------- */
+  :root {
+    --w2a-bg:            #1c1c1e;
+    --w2a-surface:       #2c2c2e;
+    --w2a-titlebar:      linear-gradient(180deg, #2c2c2e 0%, #1f1f21 100%);
+    --w2a-accent:        #5b9dff;
+    --w2a-accent-2:      #a78bfa;
+    --w2a-text:          #f5f5f7;
+    --w2a-text-muted:    rgba(245,245,247,0.55);
+    --w2a-border:        rgba(255,255,255,0.06);
+    --w2a-light-close:   #ff5f57;
+    --w2a-light-min:     #febc2e;
+    --w2a-light-max:     #28c840;
+    --w2a-radius:        10px;
+    --w2a-titlebar-h:    38px;
+    --w2a-blur:          18px;
+    --w2a-shadow:        0 8px 24px -8px rgba(0,0,0,0.4);
+    --w2a-anim-curve:    cubic-bezier(0.4, 0, 0.2, 1);
+    --w2a-anim-duration: 200ms;
+    --w2a-font:          -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", system-ui, sans-serif;
+    --w2a-frame:         "macos";
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    height: 100%;
+    background: var(--w2a-bg);
+    color: var(--w2a-text);
+    font-family: var(--w2a-font);
+    overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  /* ---------- title bar (shared) ---------- */
+  .titlebar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: var(--w2a-titlebar-h);
+    background: var(--w2a-titlebar);
+    backdrop-filter: blur(var(--w2a-blur));
+    -webkit-backdrop-filter: blur(var(--w2a-blur));
+    display: flex;
+    align-items: center;
+    -webkit-app-region: drag;
+    border-bottom: 1px solid var(--w2a-border);
+    z-index: 9999;
+    transition: background var(--w2a-anim-duration) var(--w2a-anim-curve);
+  }
+
+  /* ---------- macOS traffic lights ---------- */
+  .mac-lights {
+    display: flex;
+    gap: 8px;
+    padding-left: 14px;
+    -webkit-app-region: no-drag;
+  }
+  .light {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    border: none; padding: 0;
+    cursor: default;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: inset 0 0 0 0.5px rgba(0,0,0,0.25);
+    transition: filter 80ms var(--w2a-anim-curve);
+  }
+  .light:active { filter: brightness(0.85); }
+  .light.close    { background: var(--w2a-light-close); }
+  .light.minimize { background: var(--w2a-light-min); }
+  .light.maximize { background: var(--w2a-light-max); }
+  .light svg {
+    width: 8px; height: 8px;
+    opacity: 0;
+    transition: opacity 100ms var(--w2a-anim-curve);
+    color: rgba(0,0,0,0.6);
+  }
+  .mac-lights:hover .light svg { opacity: 1; }
+
+  /* ---------- Brand block (logo + app name) ---------- */
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 10px;
+    -webkit-app-region: drag;        /* clicking the empty area still drags */
+    height: 100%;
+    flex-shrink: 0;
+    min-width: 0;
+  }
+  .app-logo {
+    width: 16px; height: 16px;
+    border-radius: 3px;
+    object-fit: contain;
+    -webkit-app-region: no-drag;
+    flex-shrink: 0;
+  }
+  .brand-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--w2a-text);
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    -webkit-app-region: no-drag;
+    pointer-events: none;             /* part of the drag region visually */
+  }
+
+  /* ---------- Quick-actions toolbar (back / forward / reload / home / pin) ---------- */
+  .toolbar {
+    display: flex;
+    align-items: center;
+    gap: 1px;
+    padding: 0 4px;
+    -webkit-app-region: no-drag;
+    height: 100%;
+  }
+  .qa-btn {
+    width: 28px; height: 24px;
+    border: none; padding: 0; background: transparent;
+    color: var(--w2a-text-muted);
+    border-radius: 5px;
+    display: inline-flex; align-items: center; justify-content: center;
+    cursor: default;
+    transition: background 100ms var(--w2a-anim-curve), color 100ms;
+  }
+  .qa-btn:hover:not(:disabled) {
+    background: rgba(255,255,255,0.08);
+    color: var(--w2a-text);
+  }
+  .qa-btn:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+  .qa-btn.active {
+    background: color-mix(in srgb, var(--w2a-accent) 22%, transparent);
+    color: var(--w2a-accent);
+  }
+  .qa-btn svg {
+    width: 14px; height: 14px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* ---------- Windows-style controls ---------- */
+  .win-controls {
+    display: none;
+    margin-left: auto;
+    height: 100%;
+    -webkit-app-region: no-drag;
+  }
+  .win-btn {
+    width: 46px; height: 100%;
+    border: none; padding: 0; background: transparent;
+    color: var(--w2a-text);
+    opacity: 0.85;
+    font-family: "Segoe UI Symbol", "Segoe MDL2 Assets", system-ui, sans-serif;
+    font-size: 11px;
+    cursor: default;
+    transition: background 100ms var(--w2a-anim-curve), color 100ms;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .win-btn:hover { background: rgba(255,255,255,0.08); opacity: 1; }
+  .win-btn.close-btn:hover { background: var(--w2a-light-close); color: white; }
+
+  /* ---------- title text ---------- */
+  .title {
+    flex: 1;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--w2a-text-muted);
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    pointer-events: none;
+    padding: 0 12px;
+  }
+
+  /* ---------- FRAME LAYOUTS — body[data-frame=...] swaps these ---------- */
+
+  /* macOS: traffic lights left, then logo+toolbar, title centered */
+  body[data-frame="macos"] .mac-lights { display: flex; }
+  body[data-frame="macos"] .win-controls { display: none; }
+  body[data-frame="macos"] .brand-name { display: none; /* keep mac chrome compact */ }
+
+  /* Windows 11: logo+name+toolbar on the LEFT, title hidden (name acts as title), native controls right */
+  body[data-frame="windows11"] .mac-lights { display: none; }
+  body[data-frame="windows11"] .win-controls { display: flex; }
+  body[data-frame="windows11"] .title { display: none; }
+
+  /* Unified: macOS layout but fused with content (no border) */
+  body[data-frame="unified"] .mac-lights { display: flex; }
+  body[data-frame="unified"] .win-controls { display: none; }
+  body[data-frame="unified"] .titlebar { border-bottom-color: transparent; }
+  body[data-frame="unified"] .brand-name { display: none; }
+
+  /* Frameless: tiny drag area, no controls visible — keyboard shortcuts only */
+  body[data-frame="frameless"] .mac-lights { display: none; }
+  body[data-frame="frameless"] .win-controls { display: none; }
+  body[data-frame="frameless"] .brand,
+  body[data-frame="frameless"] .toolbar { display: none; }
+  body[data-frame="frameless"] .titlebar { height: 16px; background: transparent; border-bottom: none; backdrop-filter: none; }
+  body[data-frame="frameless"] .title { display: none; }
+
+  /* Native OS overlay (Windows 11 + mica): hide our CSS-painted controls
+     and leave room on the right for the OS-drawn caption buttons. */
+  body[data-native-overlay="true"] .mac-lights { display: none; }
+  body[data-native-overlay="true"] .win-controls { display: none; }
+  body[data-native-overlay="true"] .title { padding-right: 150px; }
+
+  body.fullscreen .titlebar { display: none; }
+
+  /* stage occupies the area behind the WebContentsView so there's no flash */
+  .stage {
+    position: fixed;
+    top: var(--w2a-titlebar-h); left: 0; right: 0; bottom: 0;
+    background: var(--w2a-bg);
+  }
+</style>
+</head>
+<body data-frame="macos">
+  <div class="titlebar">
+    <!-- macOS traffic lights (left) -->
+    <div class="mac-lights">
+      <button class="light close" id="btn-close" aria-label="Close" tabindex="-1">
+        <svg viewBox="0 0 8 8"><path d="M1.6 1.6 L6.4 6.4 M6.4 1.6 L1.6 6.4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      </button>
+      <button class="light minimize" id="btn-minimize" aria-label="Minimize" tabindex="-1">
+        <svg viewBox="0 0 8 8"><path d="M1.6 4 L6.4 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      </button>
+      <button class="light maximize" id="btn-maximize" aria-label="Maximize" tabindex="-1">
+        <svg class="ico-maximize" viewBox="0 0 8 8"><path d="M2 2 L6 2 L6 6 L2 6 Z" stroke="currentColor" stroke-width="1" fill="none"/></svg>
+        <svg class="ico-restore" viewBox="0 0 8 8" style="display:none"><path d="M1.5 3 L4.5 3 L4.5 6 L1.5 6 Z M3.5 1.5 L6.5 1.5 L6.5 4.5 L4.5 4.5" stroke="currentColor" stroke-width="0.9" fill="none"/></svg>
+      </button>
+    </div>
+
+    <!-- App brand: icon + name -->
+    <div class="brand">
+      <img class="app-logo" id="app-logo" alt="" />
+      <span class="brand-name" id="brand-name">App</span>
+    </div>
+
+    <!-- Quick actions toolbar -->
+    <div class="toolbar">
+      <button class="qa-btn" id="qa-back" aria-label="Back" title="Back" tabindex="-1" disabled>
+        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <button class="qa-btn" id="qa-forward" aria-label="Forward" title="Forward" tabindex="-1" disabled>
+        <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+      <button class="qa-btn" id="qa-reload" aria-label="Reload" title="Reload" tabindex="-1">
+        <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+      </button>
+      <button class="qa-btn" id="qa-home" aria-label="Home" title="Home" tabindex="-1">
+        <svg viewBox="0 0 24 24"><path d="M3 12 L12 3 L21 12"/><path d="M5 10 V20 H19 V10"/></svg>
+      </button>
+      <button class="qa-btn" id="qa-pin" aria-label="Always on top" title="Always on top" tabindex="-1">
+        <svg viewBox="0 0 24 24"><path d="M12 17 V22 M9 7 H15 L17 11 L13 13 V17 H11 V13 L7 11 Z"/></svg>
+      </button>
+    </div>
+
+    <div class="title" id="title">Loading…</div>
+
+    <!-- Windows-style controls (right) -->
+    <div class="win-controls">
+      <button class="win-btn" id="winbtn-min" aria-label="Minimize" tabindex="-1">&#xE921;</button>
+      <button class="win-btn" id="winbtn-max" aria-label="Maximize" tabindex="-1">&#xE922;</button>
+      <button class="win-btn close-btn" id="winbtn-close" aria-label="Close" tabindex="-1">&#xE8BB;</button>
+    </div>
+  </div>
+
+  <div class="stage"></div>
+
+  <script>
+    const c = window.__chrome;
+
+    // ---- read --w2a-frame from the loaded theme.css and apply layout ----
+    function applyFrame() {
+      const raw = getComputedStyle(document.documentElement).getPropertyValue("--w2a-frame");
+      const frame = (raw || "").trim().replace(/^["']|["']$/g, "") || "macos";
+      document.body.dataset.frame = frame;
+    }
+    applyFrame();
+    // theme.css may load slightly after first paint — re-read once everything is ready.
+    window.addEventListener("load", applyFrame);
+
+    // ---- macOS traffic lights ----
+    document.getElementById("btn-close").addEventListener("click", () => c.close());
+    document.getElementById("btn-minimize").addEventListener("click", () => c.minimize());
+    document.getElementById("btn-maximize").addEventListener("click", () => c.toggleMaximize());
+
+    // ---- Windows-style controls ----
+    document.getElementById("winbtn-close").addEventListener("click", () => c.close());
+    document.getElementById("winbtn-min").addEventListener("click", () => c.minimize());
+    document.getElementById("winbtn-max").addEventListener("click", () => c.toggleMaximize());
+
+    // ---- Quick-actions toolbar ----
+    const qaBack    = document.getElementById("qa-back");
+    const qaForward = document.getElementById("qa-forward");
+    const qaPin     = document.getElementById("qa-pin");
+    qaBack.addEventListener("click",    () => c.back());
+    qaForward.addEventListener("click", () => c.forward());
+    document.getElementById("qa-reload").addEventListener("click", () => c.reload());
+    document.getElementById("qa-home").addEventListener("click",   () => c.home());
+    qaPin.addEventListener("click",     () => c.togglePin());
+
+    // ---- Brand: try every known icon filename, hide the <img> if none load.
+    // The generated app's icon is dropped next to chrome.html as icon.{png,ico,
+    // icns,svg,jpg} so we can just attempt them in order.
+    (function loadLogo() {
+      const logo = document.getElementById("app-logo");
+      const candidates = ["icon.png", "icon.ico", "icon.svg", "icon.jpg", "icon.icns"];
+      let i = 0;
+      logo.onerror = () => {
+        i++;
+        if (i < candidates.length) logo.src = candidates[i];
+        else logo.style.display = "none";
+      };
+      logo.src = candidates[0];
+    })();
+
+    c.onTitle((t) => {
+      document.getElementById("title").textContent = t;
+      document.getElementById("brand-name").textContent = t;
+      document.title = t;
+    });
+    c.onFullscreen((fs) => {
+      document.body.classList.toggle("fullscreen", !!fs);
+    });
+    c.onMaximized((m) => {
+      document.querySelector(".ico-maximize").style.display = m ? "none" : "";
+      document.querySelector(".ico-restore").style.display  = m ? "" : "none";
+    });
+    c.onNativeOverlay((v) => {
+      document.body.dataset.nativeOverlay = v ? "true" : "false";
+    });
+    c.onPinned((v) => {
+      qaPin.classList.toggle("active", !!v);
+      qaPin.setAttribute("aria-pressed", v ? "true" : "false");
+    });
+    c.onNav((s) => {
+      qaBack.disabled    = !s.canBack;
+      qaForward.disabled = !s.canForward;
+    });
+  </script>
+</body>
+</html>

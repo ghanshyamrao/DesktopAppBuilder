@@ -1,0 +1,1834 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TooDesktop — Wrap any website into a real desktop app</title>
+<meta name="description" content="Visual builder for native Electron desktop apps. Pick a template, tune the theme, hit build — get a signed-ready installer for Windows, macOS, and Linux." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="icon" type="image/png" href="logo.png" />
+<!-- Google Identity Services — real OAuth, not a demo prompt.
+     Required for the "Continue with Google" button below. -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+  /* ════════════════════════════════════════════════════════════════
+     THEME TOKENS — match the desktop app's blue/violet glass aesthetic
+     Toggle by setting [data-theme="light|dark"] on <html>.
+     ════════════════════════════════════════════════════════════════ */
+  :root,
+  [data-theme="dark"] {
+    --bg:            #0b0b0f;
+    --bg-2:          #131319;
+    --surface:       rgba(22, 23, 30, 0.55);
+    --surface-2:     rgba(22, 23, 30, 0.85);
+    --surface-input: rgba(255, 255, 255, 0.04);
+    --border:        rgba(255, 255, 255, 0.08);
+    --border-strong: rgba(255, 255, 255, 0.16);
+    --text:          #f5f5f7;
+    --text-mut:      rgba(245, 245, 247, 0.62);
+    --text-dim:      rgba(245, 245, 247, 0.4);
+    --accent-blue:   #5b9dff;
+    --accent-violet: #a78bfa;
+    --accent-cyan:   #22d3ee;
+    --accent-green:  #10b981;
+    --accent-amber:  #f59e0b;
+    --accent-red:    #ef4444;
+    --shadow-elev:   0 24px 64px -16px rgba(0, 0, 0, 0.6);
+    --shadow-glow:   0 0 0 1px rgba(91, 157, 255, 0.4), 0 8px 32px -8px rgba(91, 157, 255, 0.45);
+    --shadow-glow-violet: 0 0 0 1px rgba(167, 139, 250, 0.4), 0 8px 32px -8px rgba(167, 139, 250, 0.45);
+  }
+  [data-theme="light"] {
+    --bg:            #f7f5f0;
+    --bg-2:          #ecead8;
+    --surface:       rgba(255, 255, 255, 0.7);
+    --surface-2:     #ffffff;
+    --surface-input: rgba(255, 255, 255, 0.85);
+    --border:        rgba(10, 10, 12, 0.08);
+    --border-strong: rgba(10, 10, 12, 0.16);
+    --text:          #14141a;
+    --text-mut:      rgba(20, 20, 26, 0.62);
+    --text-dim:      rgba(20, 20, 26, 0.4);
+    --shadow-elev:   0 24px 64px -16px rgba(20, 20, 40, 0.15);
+    --shadow-glow:   0 0 0 1px rgba(91, 157, 255, 0.35), 0 12px 32px -8px rgba(91, 157, 255, 0.3);
+    --shadow-glow-violet: 0 0 0 1px rgba(167, 139, 250, 0.35), 0 12px 32px -8px rgba(167, 139, 250, 0.3);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Inter", -apple-system, "Segoe UI", system-ui, sans-serif;
+    font-size: 15px; line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+    transition: background 240ms, color 240ms;
+  }
+  a { color: inherit; text-decoration: none; }
+  button { font: inherit; cursor: pointer; }
+  code, .mono { font-family: "JetBrains Mono", monospace; }
+  ::selection { background: rgba(91, 157, 255, 0.4); }
+
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+  .wrap-narrow { max-width: 920px; margin: 0 auto; padding: 0 24px; }
+
+  /* ─────────── Ambient gradient mesh — same recipe as Tailwind bg-mesh-violet ─────────── */
+  .mesh {
+    position: absolute; inset: 0; pointer-events: none;
+    background:
+      radial-gradient(60% 40% at 10% -10%, rgba(167,139,250,0.18) 0%, transparent 60%),
+      radial-gradient(45% 35% at 100% 0%, rgba(34,211,238,0.12) 0%, transparent 60%),
+      radial-gradient(50% 45% at 50% 110%, rgba(91,157,255,0.14) 0%, transparent 60%);
+  }
+  [data-theme="light"] .mesh {
+    background:
+      radial-gradient(60% 40% at 10% -10%, rgba(167,139,250,0.22) 0%, transparent 60%),
+      radial-gradient(45% 35% at 100% 0%, rgba(34,211,238,0.18) 0%, transparent 60%),
+      radial-gradient(50% 45% at 50% 110%, rgba(91,157,255,0.20) 0%, transparent 60%);
+  }
+  .mesh-dot {
+    position: absolute; inset: 0; pointer-events: none;
+    background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px);
+    background-size: 28px 28px;
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 30%, black 30%, transparent 80%);
+    -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 30%, black 30%, transparent 80%);
+  }
+  [data-theme="light"] .mesh-dot {
+    background-image: radial-gradient(rgba(20,20,40,0.07) 1px, transparent 1px);
+  }
+  .orb {
+    position: absolute; border-radius: 50%;
+    filter: blur(90px); opacity: 0.55;
+    pointer-events: none; will-change: transform;
+  }
+  .orb.blue   { background: var(--accent-blue); }
+  .orb.violet { background: var(--accent-violet); }
+  .orb.cyan   { background: var(--accent-cyan); }
+
+  /* ─────────── Glass card primitives — mirror desktop app's GlassCard ─────────── */
+  .glass {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: var(--shadow-elev);
+    border-radius: 16px;
+  }
+  .glass-strong {
+    background: var(--surface-2);
+    border: 1px solid var(--border-strong);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    box-shadow: var(--shadow-elev);
+    border-radius: 24px;
+  }
+
+  /* ─────────── Buttons — match desktop app Button.tsx variants ─────────── */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 0 20px; height: 42px;
+    border-radius: 10px;
+    font-size: 14px; font-weight: 600; letter-spacing: 0.005em;
+    border: 1px solid transparent;
+    position: relative;
+    transition: transform 120ms, filter 120ms, background 200ms, border-color 200ms, color 200ms;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .btn-sm { height: 36px; padding: 0 14px; font-size: 13px; border-radius: 8px; }
+  .btn-lg { height: 48px; padding: 0 24px; font-size: 15px; }
+  .btn-primary {
+    background: linear-gradient(180deg, var(--accent-blue), #3d7be0);
+    color: white;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.18),
+      0 8px 24px -8px rgba(91,157,255,0.55);
+  }
+  .btn-primary:hover { filter: brightness(1.1); }
+  .btn-primary:active { transform: translateY(1px); }
+  .btn-secondary {
+    background: var(--surface-input);
+    border-color: var(--border);
+    color: var(--text);
+  }
+  .btn-secondary:hover { background: var(--surface); border-color: var(--border-strong); }
+  .btn-ghost { background: transparent; color: var(--text-mut); }
+  .btn-ghost:hover { color: var(--text); background: var(--surface-input); }
+  .btn-icon { padding: 0; width: 38px; height: 38px; border-radius: 10px; }
+
+  /* ─────────── Typography ─────────── */
+  .eyebrow {
+    display: inline-block; text-transform: uppercase;
+    font-size: 11px; letter-spacing: 0.2em; font-weight: 700;
+    color: var(--accent-violet); margin-bottom: 14px;
+  }
+  .h-display {
+    font-size: clamp(40px, 5.5vw, 68px);
+    font-weight: 800; letter-spacing: -0.028em; line-height: 1.02;
+  }
+  .h-section {
+    font-size: clamp(32px, 4vw, 46px);
+    font-weight: 800; letter-spacing: -0.022em; line-height: 1.08;
+  }
+  .lede {
+    font-size: 17px; line-height: 1.55; color: var(--text-mut);
+  }
+  /* The signature blue→violet gradient text — same `text-gradient` as desktop */
+  .text-gradient {
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-violet));
+    -webkit-background-clip: text; background-clip: text;
+    color: transparent;
+  }
+
+  /* Reveal-on-scroll: tagged elements start at opacity 0 BELOW the fold.
+     We mark the document `.ready` once JS runs so above-fold reveals
+     play their entry animation immediately. */
+  .reveal { opacity: 0; transform: translateY(12px); transition: opacity 600ms, transform 600ms; }
+  .reveal.in { opacity: 1; transform: none; }
+
+  /* ─────────── Nav ─────────── */
+  nav.top {
+    position: sticky; top: 0; z-index: 50;
+    background: color-mix(in srgb, var(--bg) 80%, transparent);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border-bottom: 1px solid transparent;
+    transition: border-color 200ms, background 200ms;
+  }
+  nav.top.scrolled { border-bottom-color: var(--border); }
+  nav.top .row {
+    display: flex; align-items: center; justify-content: space-between;
+    height: 68px; gap: 24px;
+  }
+  .brand {
+    display: flex; align-items: center; gap: 10px;
+    font-weight: 700; font-size: 16px; letter-spacing: -0.015em;
+    color: var(--text);
+  }
+  .brand-mark {
+    width: 30px; height: 30px; border-radius: 8px; object-fit: cover;
+    box-shadow: 0 4px 12px -4px rgba(91,157,255,0.4);
+  }
+  .nav-center { display: flex; align-items: center; gap: 28px; }
+  .nav-center a {
+    font-size: 14px; color: var(--text-mut); font-weight: 500;
+    transition: color 120ms;
+  }
+  .nav-center a:hover { color: var(--text); }
+  .nav-right { display: flex; align-items: center; gap: 8px; }
+  @media (max-width: 880px) { .nav-center { display: none; } }
+
+  /* Theme toggle button */
+  .theme-toggle {
+    width: 38px; height: 38px; border-radius: 10px;
+    background: var(--surface-input);
+    border: 1px solid var(--border);
+    color: var(--text-mut);
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: color 200ms, background 200ms, border-color 200ms;
+  }
+  .theme-toggle:hover { color: var(--text); border-color: var(--border-strong); }
+  .theme-toggle .sun { display: none; }
+  .theme-toggle .moon { display: block; }
+  [data-theme="light"] .theme-toggle .sun { display: block; }
+  [data-theme="light"] .theme-toggle .moon { display: none; }
+
+  /* User chip (visible after sign-in) */
+  .user-chip {
+    display: none; align-items: center; gap: 8px;
+    padding: 4px 12px 4px 4px; border-radius: 999px;
+    background: var(--surface-input);
+    border: 1px solid var(--border);
+    font-size: 13px; font-weight: 600;
+    color: var(--text);
+  }
+  .user-chip.show { display: inline-flex; }
+  .user-chip-avatar {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-violet));
+    color: white;
+    display: grid; place-items: center;
+    font-size: 12px; font-weight: 800;
+  }
+  .user-chip-name { max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .auth-buttons.hide { display: none; }
+
+  /* ═══════════════════════════════════════════════════════════
+     SECTIONS
+     ═══════════════════════════════════════════════════════════ */
+
+  /* ─────────── 1. HERO ─────────── */
+  section.hero {
+    padding: 120px 0 100px;
+    position: relative; overflow: hidden;
+    text-align: center;
+  }
+  /* Each orb gently "breathes" so the background feels alive even when
+     scroll isn't happening, then drifts on parallax as the user scrolls. */
+  section.hero .orb-1 {
+    top: -160px; left: -120px; width: 520px; height: 520px;
+    transform: translateY(calc(var(--scroll-y, 0) * 0.18px));
+    animation: orbDriftA 14s ease-in-out infinite;
+  }
+  section.hero .orb-2 {
+    top: 60px; right: -140px; width: 460px; height: 460px;
+    transform: translateY(calc(var(--scroll-y, 0) * 0.14px));
+    animation: orbDriftB 16s ease-in-out infinite;
+  }
+  section.hero .orb-3 {
+    bottom: -120px; left: 35%; width: 360px; height: 360px; opacity: 0.32;
+    transform: translateY(calc(var(--scroll-y, 0) * 0.1px));
+    animation: orbDriftC 18s ease-in-out infinite;
+  }
+  @keyframes orbDriftA {
+    0%, 100% { transform: translate(0, calc(var(--scroll-y, 0) * 0.18px)) scale(1); }
+    50%      { transform: translate(30px, calc(var(--scroll-y, 0) * 0.18px - 20px)) scale(1.08); }
+  }
+  @keyframes orbDriftB {
+    0%, 100% { transform: translate(0, calc(var(--scroll-y, 0) * 0.14px)) scale(1); }
+    50%      { transform: translate(-25px, calc(var(--scroll-y, 0) * 0.14px + 25px)) scale(1.1); }
+  }
+  @keyframes orbDriftC {
+    0%, 100% { transform: translate(0, calc(var(--scroll-y, 0) * 0.1px)) scale(1); opacity: 0.32; }
+    50%      { transform: translate(40px, calc(var(--scroll-y, 0) * 0.1px - 30px)) scale(1.05); opacity: 0.42; }
+  }
+
+  /* Staggered entrance — each child of .hero-inner fades up in turn. */
+  .hero-inner > * {
+    opacity: 0;
+    transform: translateY(16px);
+    animation: heroIn 800ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  .hero-inner > *:nth-child(1) { animation-delay: 80ms; }
+  .hero-inner > *:nth-child(2) { animation-delay: 200ms; }
+  .hero-inner > *:nth-child(3) { animation-delay: 320ms; }
+  .hero-inner > *:nth-child(4) { animation-delay: 440ms; }
+  .hero-inner > *:nth-child(5) { animation-delay: 560ms; }
+  @keyframes heroIn {
+    to { opacity: 1; transform: none; }
+  }
+
+  .hero-pill {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 6px 14px 6px 6px; border-radius: 999px;
+    background: var(--surface-input);
+    border: 1px solid var(--border);
+    font-size: 13px; color: var(--text-mut);
+    margin: 0 auto 32px;
+  }
+  .hero-pill .b {
+    display: inline-flex; padding: 3px 9px; border-radius: 999px;
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-violet));
+    color: white; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  }
+  section.hero .h-display { margin: 0 auto 24px; max-width: 920px; position: relative; }
+  section.hero .lede { max-width: 620px; margin: 0 auto 40px; font-size: 18px; }
+
+  /* CTAs and meta are now block-level rows that always sit on their
+     own line — no more inline-wrapping into a single row. */
+  .hero-ctas {
+    display: flex; flex-wrap: wrap; justify-content: center; gap: 14px;
+    width: 100%;
+  }
+  .hero-meta {
+    margin-top: 28px;
+    display: flex; flex-wrap: wrap; justify-content: center;
+    gap: 12px 28px; font-size: 13px; color: var(--text-mut);
+    width: 100%;
+  }
+  .hero-meta-item { display: inline-flex; align-items: center; gap: 6px; }
+  .hero-meta svg { color: var(--accent-green); flex-shrink: 0; }
+
+  /* ─────────── 2. SCROLL-PINNED WIZARD ─────────── */
+  section.wizard {
+    position: relative; min-height: 500vh;
+    background: var(--bg);
+  }
+  section.wizard .orb-w1 { top: 15%; left: -8%; width: 480px; height: 480px; }
+  section.wizard .orb-w2 { top: 55%; right: -8%; width: 440px; height: 440px; }
+  .wizard-sticky {
+    position: sticky; top: 0;
+    height: 100vh;
+    display: grid; grid-template-columns: 1fr 1fr;
+    align-items: center; gap: 60px;
+    padding: 0 60px;
+    overflow: hidden;
+  }
+  @media (max-width: 980px) {
+    .wizard-sticky { grid-template-columns: 1fr; padding: 40px 24px; gap: 30px; }
+  }
+  .wizard-copy { position: relative; height: 300px; z-index: 2; }
+  .stage-copy {
+    position: absolute; inset: 0;
+    opacity: 0; transform: translateY(20px);
+    transition: opacity 500ms, transform 500ms;
+    pointer-events: none;
+  }
+  .stage-copy.active { opacity: 1; transform: none; pointer-events: auto; }
+  .stage-eyebrow {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 6px 14px 6px 6px; border-radius: 999px;
+    background: var(--surface-input);
+    border: 1px solid var(--border);
+    font-size: 11px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--text-mut);
+    margin-bottom: 20px;
+  }
+  .stage-eyebrow .num {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-violet));
+    color: white; display: grid; place-items: center;
+    font-size: 11px; font-weight: 700;
+  }
+  .stage-copy h2 {
+    font-size: clamp(32px, 4vw, 44px); font-weight: 800;
+    letter-spacing: -0.022em; line-height: 1.08;
+    margin-bottom: 18px;
+  }
+  .stage-copy p {
+    font-size: 17px; color: var(--text-mut); line-height: 1.6;
+    max-width: 480px;
+  }
+  .wizard-progress {
+    position: absolute; left: 60px; bottom: 60px;
+    display: flex; gap: 8px; align-items: center; z-index: 3;
+  }
+  @media (max-width: 980px) { .wizard-progress { left: 50%; transform: translateX(-50%); bottom: 30px; } }
+  .wp-bar {
+    width: 60px; height: 3px; border-radius: 2px;
+    background: var(--border-strong);
+    overflow: hidden; position: relative;
+  }
+  .wp-bar::after {
+    content: ""; position: absolute; left: 0; top: 0; bottom: 0;
+    background: linear-gradient(90deg, var(--accent-blue), var(--accent-violet));
+    width: 0%; transition: width 400ms ease;
+  }
+  .wp-bar.done::after, .wp-bar.current::after { width: 100%; }
+  .wp-label {
+    font-size: 11px; color: var(--text-dim);
+    text-transform: uppercase; letter-spacing: 0.14em;
+    margin-left: 10px; font-family: "JetBrains Mono", monospace;
+  }
+
+  /* Wizard mockup window */
+  .wizard-mock-wrap {
+    position: relative; height: 480px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .wizard-mock {
+    width: 100%; max-width: 540px;
+    border-radius: 16px;
+    background: var(--surface-2);
+    border: 1px solid var(--border-strong);
+    box-shadow: var(--shadow-elev), 0 0 0 1px rgba(91,157,255,0.15);
+    overflow: hidden; backdrop-filter: blur(8px);
+    position: relative;
+  }
+  .mock-titlebar {
+    height: 38px;
+    background: color-mix(in srgb, var(--bg) 92%, transparent);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 10px;
+    padding: 0 14px;
+  }
+  .mock-light { width: 11px; height: 11px; border-radius: 50%; }
+  .mock-light.r { background: #ff5f57; }
+  .mock-light.y { background: #febc2e; }
+  .mock-light.g { background: #28c840; }
+  .mock-title {
+    font-size: 12px; color: var(--text-mut);
+    margin-left: auto; margin-right: auto; padding-right: 60px;
+    font-family: "JetBrains Mono", monospace;
+  }
+  .mock-body { position: relative; height: 380px; overflow: hidden; }
+  .stage-mock {
+    position: absolute; inset: 0; padding: 28px;
+    opacity: 0; transform: scale(0.97) translateY(10px);
+    transition: opacity 450ms, transform 450ms;
+    pointer-events: none;
+  }
+  .stage-mock.active { opacity: 1; transform: none; pointer-events: auto; }
+
+  /* Stage 1 — URL input */
+  .s-label {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.16em;
+    color: var(--text-dim); font-weight: 700; margin-bottom: 14px;
+  }
+  .s1-input {
+    height: 56px; border-radius: 12px;
+    background: var(--surface-input);
+    border: 1.5px solid var(--accent-blue);
+    padding: 0 18px;
+    display: flex; align-items: center; gap: 10px;
+    color: var(--text);
+    font-family: "JetBrains Mono", monospace; font-size: 15px;
+    box-shadow: 0 0 0 4px rgba(91,157,255,0.15);
+    margin-bottom: 20px;
+  }
+  .s1-input .lock { color: var(--accent-green); flex-shrink: 0; }
+  .s1-caret {
+    width: 2px; height: 18px;
+    background: var(--accent-blue);
+    animation: blink 800ms steps(2, end) infinite;
+  }
+  @keyframes blink { to { opacity: 0; } }
+  .s1-suggestions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .s1-suggestion {
+    padding: 7px 12px; border-radius: 8px;
+    background: var(--surface-input);
+    border: 1px solid var(--border);
+    font-size: 12px; color: var(--text-mut);
+    display: inline-flex; align-items: center; gap: 7px;
+  }
+  .s1-suggestion .sg { width: 14px; height: 14px; border-radius: 4px; flex-shrink: 0; }
+
+  /* Stage 2 — Theme grid */
+  .s2-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .s2-theme {
+    aspect-ratio: 16/10; border-radius: 10px;
+    border: 1.5px solid var(--border);
+    position: relative; overflow: hidden;
+    transition: transform 300ms, border-color 300ms, box-shadow 300ms;
+  }
+  .s2-theme.selected {
+    border-color: var(--accent-violet);
+    transform: scale(1.04);
+    box-shadow: var(--shadow-glow-violet);
+  }
+  .s2-theme .name {
+    position: absolute; left: 10px; bottom: 8px;
+    font-size: 11px; font-weight: 700; color: white;
+  }
+  .s2-theme .check {
+    position: absolute; top: 8px; right: 8px;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-violet));
+    color: white;
+    display: none; place-items: center;
+  }
+  .s2-theme.selected .check { display: grid; }
+
+  /* Stage 3 — Build */
+  .s3-status { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .s3-step-label { font-size: 13px; color: var(--text-mut); }
+  .s3-percent { font-family: "JetBrains Mono", monospace; font-weight: 700; color: var(--accent-green); font-size: 14px; }
+  .s3-bar {
+    height: 6px; border-radius: 3px;
+    background: var(--border-strong);
+    overflow: hidden; position: relative;
+    margin-bottom: 22px;
+  }
+  .s3-bar::after {
+    content: ""; position: absolute; left: 0; top: 0; bottom: 0;
+    background: linear-gradient(90deg, var(--accent-blue), var(--accent-violet));
+    width: 0;
+    animation: fill 4s ease-in-out infinite;
+  }
+  @keyframes fill { 0% { width: 0; } 70% { width: 96%; } 85% { width: 100%; } 100% { width: 100%; } }
+  .s3-log {
+    padding: 14px; border-radius: 10px;
+    background: color-mix(in srgb, var(--bg) 90%, transparent);
+    border: 1px solid var(--border);
+    font-family: "JetBrains Mono", monospace; font-size: 12px;
+    color: var(--text-mut); line-height: 1.85;
+    max-height: 180px; overflow: hidden;
+  }
+  .s3-log-line.ok   { color: var(--accent-green); }
+  .s3-log-line.warn { color: var(--accent-amber); }
+
+  /* Stage 4 — Done */
+  .s4-done { text-align: center; padding: 20px 0 24px; }
+  .s4-check {
+    width: 72px; height: 72px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-violet));
+    color: white; display: grid; place-items: center;
+    margin: 0 auto 18px;
+    animation: pop 600ms cubic-bezier(0.16, 1, 0.3, 1) both;
+    box-shadow: var(--shadow-glow);
+  }
+  @keyframes pop { 0% { transform: scale(0.6); opacity: 0; } 60% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); } }
+  .s4-title { font-size: 22px; font-weight: 800; letter-spacing: -0.015em; margin-bottom: 8px; }
+  .s4-sub { font-size: 13px; color: var(--text-mut); margin-bottom: 22px; }
+  .s4-platforms { display: inline-flex; gap: 8px; }
+  .s4-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 12px; border-radius: 999px;
+    background: var(--surface-input);
+    border: 1px solid var(--border);
+    font-size: 11px; font-weight: 600; color: var(--text);
+  }
+  .s4-pill .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent-green); }
+
+  /* ─────────── 3. WALL ─────────── */
+  section.wall { padding: 110px 0; text-align: center; position: relative; }
+  section.wall .h-section { max-width: 760px; margin: 0 auto 18px; }
+  section.wall .lede { max-width: 600px; margin: 0 auto 60px; }
+  .wall-grid {
+    display: grid; gap: 16px;
+    grid-template-columns: repeat(4, 1fr);
+    max-width: 920px; margin: 0 auto;
+  }
+  @media (max-width: 720px) { .wall-grid { grid-template-columns: repeat(2, 1fr); } }
+  .wall-tile {
+    aspect-ratio: 5/3; border-radius: 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    backdrop-filter: blur(12px);
+    display: flex; align-items: center; justify-content: center;
+    gap: 12px; font-weight: 700; font-size: 15px;
+    letter-spacing: -0.01em;
+    transition: transform 200ms, border-color 200ms, box-shadow 200ms;
+  }
+  .wall-tile:hover {
+    transform: translateY(-3px);
+    border-color: var(--accent-blue);
+    box-shadow: var(--shadow-glow);
+  }
+  .wall-glyph {
+    width: 32px; height: 32px; border-radius: 8px;
+    display: grid; place-items: center;
+    color: white; font-weight: 800; font-size: 13px;
+  }
+
+  /* ─────────── 4. WHY ─────────── */
+  section.why { padding: 110px 0; position: relative; }
+  .why-intro { text-align: center; margin-bottom: 60px; }
+  .why-intro .h-section { max-width: 760px; margin: 0 auto 18px; }
+  .why-intro .lede { max-width: 620px; margin: 0 auto; }
+  .why-grid {
+    display: grid; gap: 20px;
+    grid-template-columns: repeat(3, 1fr);
+  }
+  @media (max-width: 820px) { .why-grid { grid-template-columns: 1fr; } }
+  .why-card {
+    padding: 30px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    backdrop-filter: blur(12px);
+    transition: transform 200ms, border-color 200ms, box-shadow 200ms;
+  }
+  .why-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--border-strong);
+    box-shadow: var(--shadow-glow);
+  }
+  .why-glyph {
+    width: 44px; height: 44px; border-radius: 11px;
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-violet));
+    color: white;
+    display: grid; place-items: center;
+    margin-bottom: 18px;
+    box-shadow: 0 8px 24px -8px rgba(91,157,255,0.4);
+  }
+  .why-card h3 { font-size: 19px; font-weight: 700; letter-spacing: -0.012em; margin-bottom: 10px; }
+  .why-card p { font-size: 14.5px; color: var(--text-mut); line-height: 1.6; }
+
+  /* ─────────── 5. PRICING ─────────── */
+  section.pricing { padding: 110px 0; text-align: center; position: relative; }
+  section.pricing .h-section { max-width: 720px; margin: 0 auto 18px; }
+  section.pricing .lede { max-width: 620px; margin: 0 auto 50px; }
+  .price-grid {
+    display: grid; gap: 18px;
+    grid-template-columns: repeat(3, 1fr);
+    max-width: 1040px;
+    margin: 0 auto;
+    text-align: left;
+  }
+  @media (max-width: 860px)  { .price-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 560px)  { .price-grid { grid-template-columns: 1fr; } }
+  .price-card {
+    padding: 24px 22px;
+    border-radius: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    backdrop-filter: blur(12px);
+    display: flex; flex-direction: column; gap: 14px;
+    position: relative;
+    transition: transform 200ms;
+  }
+  .price-card:hover { transform: translateY(-3px); }
+  .price-card.featured {
+    border-color: var(--accent-blue);
+    box-shadow: var(--shadow-glow);
+  }
+  .price-card.lifetime {
+    border-color: var(--accent-violet);
+    box-shadow: var(--shadow-glow-violet);
+  }
+  .price-card .pop {
+    position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-violet));
+    color: white;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 4px 10px; border-radius: 999px;
+    white-space: nowrap;
+  }
+  .price-card .save-badge {
+    display: inline-flex; padding: 2px 8px; border-radius: 999px;
+    background: rgba(167, 139, 250, 0.18);
+    color: var(--accent-violet);
+    font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+    align-self: flex-start;
+  }
+  .price-card .tier { font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-mut); }
+  .price-card .price { font-size: 36px; font-weight: 800; letter-spacing: -0.025em; line-height: 1; color: var(--text); }
+  .price-card .price small { font-size: 14px; font-weight: 500; color: var(--text-mut); letter-spacing: 0; }
+  .price-card .price-desc { font-size: 13.5px; color: var(--text-mut); line-height: 1.5; }
+  .price-card ul { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
+  .price-card li { font-size: 13.5px; display: flex; gap: 8px; align-items: flex-start; }
+  .price-card li svg { flex-shrink: 0; color: var(--accent-green); margin-top: 3px; }
+  .price-card .btn { justify-content: center; margin-top: auto; width: 100%; }
+  .price-trial-note { margin-top: 32px; font-size: 14px; color: var(--text-mut); }
+  .price-trial-note strong {
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-violet));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    font-weight: 700;
+  }
+
+  /* ─────────── 6. FAQ ─────────── */
+  section.faq { padding: 110px 0; position: relative; }
+  section.faq .h-section { text-align: center; margin-bottom: 50px; }
+  .faq-list { max-width: 760px; margin: 0 auto; }
+  .faq-item { border-bottom: 1px solid var(--border); padding: 4px 0; }
+  .faq-item summary {
+    list-style: none; cursor: pointer; padding: 22px 0;
+    font-size: 16px; font-weight: 600;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  }
+  .faq-item summary::-webkit-details-marker { display: none; }
+  .faq-item summary::after {
+    content: "+"; font-family: "JetBrains Mono", monospace;
+    font-size: 22px; font-weight: 400; color: var(--text-mut);
+    width: 22px; height: 22px; display: grid; place-items: center;
+    flex-shrink: 0; transition: transform 200ms;
+  }
+  .faq-item[open] summary::after { content: "×"; color: var(--accent-violet); }
+  .faq-item p { padding: 0 0 22px; color: var(--text-mut); font-size: 15px; line-height: 1.65; max-width: 640px; }
+  .faq-foot { margin-top: 36px; text-align: center; font-size: 14px; color: var(--text-mut); }
+  .faq-foot a {
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-violet));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    font-weight: 600;
+  }
+
+  /* ─────────── 7. FINAL CTA ─────────── */
+  section.final-cta { padding: 120px 0; text-align: center; position: relative; overflow: hidden; }
+  section.final-cta .orb-fc1 { top: 10%; left: 20%; width: 400px; height: 400px; opacity: 0.4; }
+  section.final-cta .orb-fc2 { bottom: 0; right: 20%; width: 360px; height: 360px; opacity: 0.4; }
+  section.final-cta img { width: 80px; height: 80px; border-radius: 20px; margin: 0 auto 24px; display: block; box-shadow: var(--shadow-glow); }
+  section.final-cta .h-section { margin-bottom: 18px; }
+  section.final-cta .lede { max-width: 620px; margin: 0 auto 36px; }
+
+  /* ─────────── 8. FOOTER ─────────── */
+  footer.bottom {
+    background: var(--bg);
+    color: var(--text-mut);
+    padding: 80px 0 40px;
+    border-top: 1px solid var(--border);
+  }
+  .footer-grid {
+    display: grid; grid-template-columns: 2fr repeat(4, 1fr);
+    gap: 40px; padding-bottom: 50px;
+    border-bottom: 1px solid var(--border);
+  }
+  @media (max-width: 920px) { .footer-grid { grid-template-columns: 1fr 1fr; } }
+  .footer-col h5 {
+    font-size: 12px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.14em; color: var(--text); margin-bottom: 18px;
+  }
+  .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .footer-col a { font-size: 14px; color: var(--text-mut); transition: color 120ms; }
+  .footer-col a:hover { color: var(--text); }
+  .footer-brand { display: flex; flex-direction: column; gap: 14px; max-width: 280px; }
+  .footer-brand p { font-size: 13.5px; color: var(--text-mut); line-height: 1.55; }
+  .footer-bottom {
+    padding-top: 30px;
+    display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px;
+    font-size: 13px; color: var(--text-dim);
+  }
+
+  /* ═══════════════════════════════════════════════════════════
+     SIGN-IN MODAL — real form + localStorage persistence
+     ═══════════════════════════════════════════════════════════ */
+  .modal-backdrop {
+    position: fixed; inset: 0; z-index: 100;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    display: none; align-items: center; justify-content: center;
+    padding: 24px;
+    opacity: 0; transition: opacity 200ms;
+  }
+  .modal-backdrop.open { display: flex; opacity: 1; }
+  .modal-card {
+    width: 100%; max-width: 440px;
+    background: var(--surface-2);
+    border: 1px solid var(--border-strong);
+    backdrop-filter: blur(24px);
+    border-radius: 24px;
+    padding: 36px;
+    box-shadow: var(--shadow-elev);
+    position: relative;
+    transform: scale(0.96) translateY(8px);
+    opacity: 0;
+    transition: transform 240ms cubic-bezier(0.16, 1, 0.3, 1), opacity 240ms;
+  }
+  .modal-backdrop.open .modal-card { transform: none; opacity: 1; }
+  .modal-close {
+    position: absolute; top: 16px; right: 16px;
+    width: 32px; height: 32px; border-radius: 50%;
+    border: 0; background: var(--surface-input);
+    color: var(--text-mut);
+    display: grid; place-items: center;
+    transition: color 120ms, background 120ms;
+  }
+  .modal-close:hover { color: var(--text); background: var(--border-strong); }
+  .modal-logo {
+    width: 56px; height: 56px; border-radius: 14px;
+    margin: 0 auto 18px; display: block;
+    object-fit: cover;
+    box-shadow: var(--shadow-glow);
+  }
+  .modal-title {
+    text-align: center; font-size: 22px; font-weight: 800;
+    letter-spacing: -0.018em; margin-bottom: 8px;
+  }
+  .modal-sub {
+    text-align: center; font-size: 14px; color: var(--text-mut);
+    margin-bottom: 26px; line-height: 1.5;
+  }
+  .form-field { margin-bottom: 14px; }
+  .form-field label {
+    display: block; font-size: 12px; font-weight: 600;
+    color: var(--text-mut); margin-bottom: 6px;
+    letter-spacing: 0.02em;
+  }
+  .form-field input {
+    width: 100%; height: 44px;
+    padding: 0 14px;
+    border-radius: 10px;
+    background: var(--surface-input);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: inherit; font-size: 14px;
+    transition: border-color 200ms, box-shadow 200ms;
+    outline: none;
+  }
+  .form-field input::placeholder { color: var(--text-dim); }
+  .form-field input:focus {
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 0 3px rgba(91, 157, 255, 0.2);
+  }
+  .form-error {
+    background: rgba(239, 68, 68, 0.12);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: var(--accent-red);
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 12.5px;
+    margin-bottom: 14px;
+    display: none;
+  }
+  .form-error.show { display: block; }
+  .form-submit {
+    width: 100%; margin-top: 6px;
+  }
+  .modal-divider {
+    display: flex; align-items: center; gap: 12px;
+    margin: 22px 0;
+    color: var(--text-dim);
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.16em;
+  }
+  .modal-divider::before, .modal-divider::after {
+    content: ""; flex: 1; height: 1px; background: var(--border);
+  }
+  .google-btn {
+    width: 100%; height: 46px;
+    border-radius: 12px;
+    background: white;
+    color: #1f1f1f;
+    font-weight: 600; font-size: 14px;
+    display: inline-flex; align-items: center; justify-content: center;
+    gap: 12px; border: 0;
+    box-shadow: 0 4px 12px -4px rgba(0,0,0,0.2);
+    transition: filter 120ms;
+  }
+  .google-btn:hover { filter: brightness(0.97); }
+  .modal-foot {
+    text-align: center; font-size: 13px;
+    color: var(--text-mut);
+    margin-top: 22px;
+  }
+  .modal-foot a {
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-violet));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    font-weight: 600; cursor: pointer;
+  }
+  .modal-meta {
+    margin-top: 18px;
+    display: flex; flex-direction: column; gap: 6px;
+    text-align: center;
+  }
+  .modal-meta-line {
+    display: inline-flex; align-items: center; justify-content: center;
+    gap: 6px; font-size: 11px; color: var(--text-dim);
+  }
+
+  /* User dropdown menu */
+  .user-menu {
+    position: absolute; top: 100%; right: 0; margin-top: 8px;
+    width: 240px;
+    background: var(--surface-2);
+    border: 1px solid var(--border-strong);
+    backdrop-filter: blur(20px);
+    border-radius: 12px;
+    box-shadow: var(--shadow-elev);
+    padding: 8px;
+    display: none;
+    z-index: 100;
+  }
+  .user-menu.open { display: block; }
+  .user-menu-head {
+    padding: 12px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 6px;
+  }
+  .user-menu-head .name { font-size: 14px; font-weight: 700; color: var(--text); }
+  .user-menu-head .email { font-size: 12px; color: var(--text-mut); margin-top: 2px; }
+  .user-menu button {
+    width: 100%; text-align: left;
+    padding: 9px 12px; border-radius: 8px;
+    background: transparent; border: 0;
+    color: var(--text);
+    font-size: 13.5px;
+    display: flex; align-items: center; gap: 8px;
+    transition: background 120ms;
+  }
+  .user-menu button:hover { background: var(--surface-input); }
+  .user-menu button svg { color: var(--text-mut); }
+  .user-menu .sign-out { color: var(--accent-red); }
+  .user-menu .sign-out svg { color: var(--accent-red); }
+  .user-chip-wrap { position: relative; }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 24px; right: 24px; z-index: 200;
+    padding: 14px 18px;
+    background: var(--surface-2);
+    border: 1px solid var(--accent-green);
+    border-radius: 12px;
+    color: var(--text);
+    font-size: 14px; font-weight: 500;
+    box-shadow: var(--shadow-elev);
+    display: flex; align-items: center; gap: 10px;
+    transform: translateY(20px); opacity: 0;
+    transition: transform 300ms, opacity 300ms;
+    pointer-events: none;
+  }
+  .toast.show { transform: none; opacity: 1; pointer-events: auto; }
+  .toast svg { color: var(--accent-green); flex-shrink: 0; }
+</style>
+</head>
+<body>
+
+<!-- ─────────── NAV ─────────── -->
+<nav class="top">
+  <div class="wrap row">
+    <a href="#" class="brand">
+      <img src="logo.png" alt="TooDesktop" class="brand-mark" />
+      <span>TooDesktop</span>
+    </a>
+    <div class="nav-center">
+      <a href="#wizard">How it works</a>
+      <a href="#wall">Templates</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+    </div>
+    <div class="nav-right">
+      <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme" title="Toggle theme">
+        <svg class="moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg class="sun"  width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+      </button>
+
+      <div class="auth-buttons" id="auth-buttons">
+        <a class="btn btn-ghost btn-sm" href="#" data-open-signin>Log in</a>
+        <a class="btn btn-primary btn-sm" href="#" data-open-signup>Get started</a>
+      </div>
+
+      <div class="user-chip-wrap">
+        <button class="user-chip" id="user-chip">
+          <span class="user-chip-avatar" id="user-avatar">U</span>
+          <span class="user-chip-name" id="user-name">User</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="user-menu" id="user-menu">
+          <div class="user-menu-head">
+            <div class="name" id="menu-name">User</div>
+            <div class="email" id="menu-email">user@example.com</div>
+          </div>
+          <button>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/></svg>
+            Your projects
+          </button>
+          <button>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            Settings
+          </button>
+          <button class="sign-out" id="sign-out">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Sign out
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ─────────── 1. HERO ─────────── -->
+<section class="hero">
+  <div class="mesh"></div>
+  <div class="mesh-dot"></div>
+  <div class="orb blue orb-1"></div>
+  <div class="orb violet orb-2"></div>
+  <div class="orb cyan orb-3"></div>
+
+  <div class="wrap" style="position: relative; z-index: 2;">
+    <div class="hero-inner">
+      <div class="hero-pill">
+        <span class="b">New</span>
+        <span>v1.0 — visual builder is live</span>
+      </div>
+
+      <h1 class="h-display">
+        Turn any website into a <span class="text-gradient">real desktop app</span> — visually
+      </h1>
+
+      <p class="lede">
+        Pick a template, drag-drop a UI, or wrap a URL. Tune the theme,
+        wire native actions, and ship a signed installer for Windows,
+        macOS, and Linux — without writing Electron code.
+      </p>
+
+      <div class="hero-ctas">
+        <a class="btn btn-primary btn-lg" href="#" data-open-signup>
+          Start free trial
+        </a>
+        <a class="btn btn-secondary btn-lg" href="#wizard">
+          See how it works
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </a>
+      </div>
+
+      <div class="hero-meta">
+        <span class="hero-meta-item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          14-day free trial
+        </span>
+        <span class="hero-meta-item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          Cancel anytime
+        </span>
+        <span class="hero-meta-item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          $100 lifetime option
+        </span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────── 2. SCROLL-PINNED WIZARD ─────────── -->
+<section id="wizard" class="wizard">
+  <div class="orb violet orb-w1"></div>
+  <div class="orb blue orb-w2"></div>
+
+  <div class="wizard-sticky">
+    <div class="wizard-copy">
+      <div class="stage-copy" data-stage="0">
+        <div class="stage-eyebrow"><span class="num">1</span> Step one</div>
+        <h2>Paste any <span class="text-gradient">URL</span></h2>
+        <p>Notion, Linear, Figma, YouTube, your internal admin panel — anything that runs in a browser becomes a real native window. No build chain, no boilerplate.</p>
+      </div>
+      <div class="stage-copy" data-stage="1">
+        <div class="stage-eyebrow"><span class="num">2</span> Step two</div>
+        <h2>Pick a <span class="text-gradient">theme</span></h2>
+        <p>Seven curated looks — macOS, Windows 11, Cyberpunk, Discord, Monochrome — or design your own. The live preview re-renders as you tweak colors and frames.</p>
+      </div>
+      <div class="stage-copy" data-stage="2">
+        <div class="stage-eyebrow"><span class="num">3</span> Step three</div>
+        <h2>Hit <span class="text-gradient">build</span></h2>
+        <p>TooDesktop runs <code>npm install</code> + <code>electron-builder</code> for you. Streaming logs, real progress, code-signing wired up — all from one window.</p>
+      </div>
+      <div class="stage-copy" data-stage="3">
+        <div class="stage-eyebrow"><span class="num">4</span> Step four</div>
+        <h2><span class="text-gradient">Ship</span> it</h2>
+        <p>Walk away with a signed-ready installer for every platform. Drop it in Slack, upload to GitHub Releases, or wire it into your CDN. Done in under a minute.</p>
+      </div>
+
+      <div class="wizard-progress">
+        <div class="wp-bar" data-bar="0"></div>
+        <div class="wp-bar" data-bar="1"></div>
+        <div class="wp-bar" data-bar="2"></div>
+        <div class="wp-bar" data-bar="3"></div>
+        <span class="wp-label" data-progress-label>01 / 04</span>
+      </div>
+    </div>
+
+    <div class="wizard-mock-wrap">
+      <div class="wizard-mock">
+        <div class="mock-titlebar">
+          <span class="mock-light r"></span>
+          <span class="mock-light y"></span>
+          <span class="mock-light g"></span>
+          <span class="mock-title" data-mock-title>TooDesktop — New project</span>
+        </div>
+
+        <div class="mock-body">
+          <!-- Stage 1 — URL -->
+          <div class="stage-mock" data-stage="0">
+            <div class="s-label">App URL</div>
+            <div class="s1-input">
+              <svg class="lock" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <span data-typed>https://notion.so</span>
+              <span class="s1-caret"></span>
+            </div>
+            <div class="s-label" style="margin-top: 24px;">Or start from a template</div>
+            <div class="s1-suggestions">
+              <span class="s1-suggestion"><span class="sg" style="background:linear-gradient(135deg,#0f0f0f,#3a3a3a)"></span>Notion</span>
+              <span class="s1-suggestion"><span class="sg" style="background:linear-gradient(135deg,#5e6ad2,#1f1f23)"></span>Linear</span>
+              <span class="s1-suggestion"><span class="sg" style="background:linear-gradient(135deg,#25d366,#075e54)"></span>WhatsApp</span>
+              <span class="s1-suggestion"><span class="sg" style="background:linear-gradient(135deg,#ef4444,#7f1d1d)"></span>YouTube</span>
+              <span class="s1-suggestion"><span class="sg" style="background:linear-gradient(135deg,#5865f2,#1e2030)"></span>Discord</span>
+            </div>
+          </div>
+
+          <!-- Stage 2 — Theme -->
+          <div class="stage-mock" data-stage="1">
+            <div class="s-label">Pick a theme</div>
+            <div class="s2-grid">
+              <div class="s2-theme" style="background: linear-gradient(135deg, #1c1c1e, #2c2c2e)">
+                <div class="check"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+                <div class="name">macOS</div>
+              </div>
+              <div class="s2-theme selected" style="background: linear-gradient(135deg, #1a0033, #ff00aa)">
+                <div class="check"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+                <div class="name">Cyberpunk</div>
+              </div>
+              <div class="s2-theme" style="background: linear-gradient(135deg, #f5f5f7, #c7c7cc);">
+                <div class="check"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+                <div class="name" style="color:#1a1a1c;">Windows 11</div>
+              </div>
+              <div class="s2-theme" style="background: linear-gradient(135deg, #5865f2, #1e2030)">
+                <div class="check"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+                <div class="name">Discord</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Stage 3 — Build -->
+          <div class="stage-mock" data-stage="2">
+            <div class="s3-status">
+              <div class="s3-step-label">Step 4 / 5 · Packaging installer</div>
+              <div class="s3-percent">87%</div>
+            </div>
+            <div class="s3-bar"></div>
+            <div class="s3-log">
+              <div class="s3-log-line ok">✓ npm install · 247 packages</div>
+              <div class="s3-log-line ok">✓ webpack bundle · 1.2 MB</div>
+              <div class="s3-log-line ok">✓ electron-builder · win-x64</div>
+              <div class="s3-log-line">→ writing dist/notion-setup-1.0.0.exe</div>
+              <div class="s3-log-line warn">⚠ skipping notarization (macOS only)</div>
+              <div class="s3-log-line">→ generating auto-update manifest</div>
+            </div>
+          </div>
+
+          <!-- Stage 4 — Done -->
+          <div class="stage-mock" data-stage="3">
+            <div class="s4-done">
+              <div class="s4-check">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+              <div class="s4-title">Build complete</div>
+              <div class="s4-sub"><code>notion-setup-1.0.0.exe</code> · 84 MB</div>
+              <div class="s4-platforms">
+                <span class="s4-pill"><span class="dot"></span>Windows</span>
+                <span class="s4-pill"><span class="dot"></span>macOS</span>
+                <span class="s4-pill"><span class="dot"></span>Linux</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────── 3. WALL ─────────── -->
+<section id="wall" class="wall">
+  <div class="mesh"></div>
+  <div class="wrap" style="position: relative;">
+    <div class="eyebrow reveal">Templates</div>
+    <h2 class="h-section reveal">Powering desktop versions of the apps your team already loves</h2>
+    <p class="lede reveal">Every template ships pre-tuned with a theme, custom CSS, and sensible shortcuts. Click → wizard → build.</p>
+    <div class="wall-grid">
+      <div class="wall-tile reveal"><span class="wall-glyph" style="background:linear-gradient(135deg,#0f0f0f,#3a3a3a)">N</span>Notion</div>
+      <div class="wall-tile reveal"><span class="wall-glyph" style="background:linear-gradient(135deg,#ef4444,#7f1d1d)">▶</span>YouTube</div>
+      <div class="wall-tile reveal"><span class="wall-glyph" style="background:linear-gradient(135deg,#5e6ad2,#1f1f23)">L</span>Linear</div>
+      <div class="wall-tile reveal"><span class="wall-glyph" style="background:linear-gradient(135deg,#25d366,#075e54)">W</span>WhatsApp</div>
+      <div class="wall-tile reveal"><span class="wall-glyph" style="background:linear-gradient(135deg,#5865f2,#1e2030)">D</span>Discord</div>
+      <div class="wall-tile reveal"><span class="wall-glyph" style="background:linear-gradient(135deg,#1db954,#0d2818)">S</span>Spotify</div>
+      <div class="wall-tile reveal"><span class="wall-glyph" style="background:linear-gradient(135deg,#ea4335,#fbbc04)">@</span>Gmail</div>
+      <div class="wall-tile reveal"><span class="wall-glyph" style="background:linear-gradient(135deg,#10b981,#0ea5e9)">M</span>Maps</div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────── 4. WHY ─────────── -->
+<section class="why">
+  <div class="wrap">
+    <div class="why-intro">
+      <div class="eyebrow reveal">Why TooDesktop</div>
+      <h2 class="h-section reveal">Everything you'd otherwise have to <span class="text-gradient">glue together</span></h2>
+      <p class="lede reveal">We handle the Electron plumbing — preload bridges, IPC, signing, installers, auto-update — so you can ship desktop software the same way you ship a webpage.</p>
+    </div>
+    <div class="why-grid">
+      <div class="why-card reveal">
+        <div class="why-glyph"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg></div>
+        <h3>One-click installers</h3>
+        <p>NSIS for Windows, DMG for macOS, AppImage for Linux. Auto-update channel and code-signing config wired in for you.</p>
+      </div>
+      <div class="why-card reveal">
+        <div class="why-glyph"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6v6H9z"/></svg></div>
+        <h3>Native by default</h3>
+        <p>Tray icon, minimize-to-tray, global shortcuts, deep-link protocols, OS notifications — one toggle each, no Electron code.</p>
+      </div>
+      <div class="why-card reveal">
+        <div class="why-glyph"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/><circle cx="17" cy="7" r="4"/></svg></div>
+        <h3>Yours to keep</h3>
+        <p>Outgrew the GUI? Export the full Electron project folder anytime. No lock-in, no proprietary runtime.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────── 5. PRICING ─────────── -->
+<section id="pricing" class="pricing">
+  <div class="mesh"></div>
+  <div class="wrap" style="position: relative;">
+    <div class="eyebrow reveal">Pricing</div>
+    <h2 class="h-section reveal">Pick the <span class="text-gradient">plan</span> that fits you</h2>
+    <p class="lede reveal">
+      Try it free for 14 days, then stay monthly or unlock everything for life.
+      No long-term contracts — cancel anytime.
+    </p>
+
+    <div class="price-grid">
+      <div class="price-card reveal">
+        <div class="tier">Free Trial</div>
+        <div class="price">FREE<small> /14 days</small></div>
+        <div class="price-desc">Kick the tires before you commit. Card required — no charge until day 15.</div>
+        <ul>
+          <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>3 builds total over 14 days</li>
+          <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>App Studio + cross-platform installers</li>
+          <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Action Builder (tray, shortcuts)</li>
+          <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Auto-converts to Monthly on day 15</li>
+        </ul>
+        <button class="btn btn-secondary" data-open-signup>Start free trial</button>
+      </div>
+
+      <div class="price-card featured reveal">
+        <span class="pop">Most popular</span>
+        <div class="tier">Monthly</div>
+        <div class="price">$25<small> /month</small></div>
+        <div class="price-desc">Full builder, all features, billed monthly. Cancel anytime.</div>
+        <ul>
+          <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>5 builds per day</li>
+          <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Theme Builder + AI Assistant</li>
+          <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Custom CSS / JS injection</li>
+          <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Code signing + GitHub Releases publish</li>
+        </ul>
+        <button class="btn btn-primary" data-open-signup>Subscribe monthly</button>
+      </div>
+
+      <div class="price-card lifetime reveal">
+        <span class="pop">Best value</span>
+        <div class="tier">Lifetime</div>
+        <div class="price">$100<small> /one-time</small></div>
+        <div class="price-desc">Pay once, own it forever. Every future update included.</div>
+        <ul>
+          <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Unlimited builds</li>
+          <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Everything in Monthly</li>
+          <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Priority support</li>
+          <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Lifetime updates — never pay again</li>
+        </ul>
+        <button class="btn btn-primary" data-open-signup>Get lifetime</button>
+      </div>
+    </div>
+
+    <p class="price-trial-note reveal">
+      The trial runs through Paddle — add a card to start, cancel anytime in 14 days, and you won't be charged.
+    </p>
+  </div>
+</section>
+
+<!-- ─────────── 6. FAQ ─────────── -->
+<section id="faq" class="faq">
+  <div class="wrap-narrow">
+    <div class="eyebrow reveal" style="text-align:center;display:block;">Common questions</div>
+    <h2 class="h-section reveal">Questions &amp; answers</h2>
+    <div class="faq-list">
+      <details class="faq-item reveal">
+        <summary>Who is TooDesktop for?</summary>
+        <p>If you have a web app and want to give users a real desktop install — tray icon, native window controls, OS shortcuts — TooDesktop is built for you. No prior Electron experience required.</p>
+      </details>
+      <details class="faq-item reveal">
+        <summary>What does the free trial include?</summary>
+        <p>14 days of access with up to 3 builds total — enough to wrap a site, tune the theme, and ship a real installer. Includes App Studio, cross-platform installers, and the Action Builder (tray, shortcuts). The trial runs through Paddle, so a card is required up front; you won't be charged until day 15, and cancelling anytime in the trial window costs nothing. Need more builds or every feature? Upgrade to Monthly or Lifetime mid-trial.</p>
+      </details>
+      <details class="faq-item reveal">
+        <summary>How is this different from raw Electron?</summary>
+        <p>Electron is the runtime. TooDesktop is the visual builder on top: it wires preload bridges, packages installers, handles code-signing config, and gives you a theme and action graph — all the parts you'd otherwise hand-write per project.</p>
+      </details>
+      <details class="faq-item reveal">
+        <summary>What does "Lifetime" actually mean?</summary>
+        <p>You pay $100 once and receive every TooDesktop update we ship, forever. No subscription renews. If we ever sunset the product, you keep the last working version and can export your projects as plain Electron source.</p>
+      </details>
+      <details class="faq-item reveal">
+        <summary>I already use electron-builder. Can I migrate?</summary>
+        <p>Yes. Import an existing project and TooDesktop reads your <code>electron-builder.yml</code>. Your config stays as-is; the visual editor just makes it easier to maintain.</p>
+      </details>
+      <details class="faq-item reveal">
+        <summary>Do you collect data from my apps or builds?</summary>
+        <p>No app telemetry by default. TooDesktop itself collects anonymous usage to improve the builder — fully opt-out in Settings. Your projects, source code, and build outputs never leave your machine.</p>
+      </details>
+    </div>
+    <div class="faq-foot">
+      Got more questions? <a href="#">Visit the docs</a> or <a href="#">send us a message</a>.
+    </div>
+  </div>
+</section>
+
+<!-- ─────────── 7. FINAL CTA ─────────── -->
+<section class="final-cta">
+  <div class="orb blue orb-fc1"></div>
+  <div class="orb violet orb-fc2"></div>
+  <div class="wrap-narrow" style="position: relative;">
+    <img src="logo.png" alt="TooDesktop" />
+    <div class="eyebrow">Get started</div>
+    <h2 class="h-section">Ship your first <span class="text-gradient">desktop app</span> today</h2>
+    <p class="lede">Pick a template, paste a URL, hit build. The whole flow takes under a minute — and the installer is yours to keep.</p>
+    <div class="hero-ctas" style="margin-top: 8px;">
+      <a class="btn btn-primary btn-lg" href="#" data-open-signup>Start your free trial</a>
+      <a class="btn btn-secondary btn-lg" href="#" data-open-signin>Sign in</a>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────── 8. FOOTER ─────────── -->
+<footer class="bottom">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="#" class="brand">
+          <img src="logo.png" alt="TooDesktop" class="brand-mark" />
+          <span>TooDesktop</span>
+        </a>
+        <p>The visual builder for native Electron desktop apps. Wrap a URL, tune the theme, ship cross-platform.</p>
+      </div>
+      <div class="footer-col">
+        <h5>Product</h5>
+        <ul>
+          <li><a href="#wizard">How it works</a></li>
+          <li><a href="#wall">Templates</a></li>
+          <li><a href="#pricing">Pricing</a></li>
+          <li><a href="#">Changelog</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Resources</h5>
+        <ul>
+          <li><a href="#">Docs</a></li>
+          <li><a href="#">SDK reference</a></li>
+          <li><a href="#">Blog</a></li>
+          <li><a href="#faq">FAQ</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Legal</h5>
+        <ul>
+          <li><a href="privacy.html">Privacy</a></li>
+          <li><a href="terms.html">Terms</a></li>
+          <li><a href="refund.html">Refund</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Company</h5>
+        <ul>
+          <li><a href="#">Contact</a></li>
+          <li><a href="#">Twitter</a></li>
+          <li><a href="#">GitHub</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div>© 2026 TooDesktop, Inc.</div>
+      <div>Built with Electron, React &amp; a lot of coffee.</div>
+    </div>
+  </div>
+</footer>
+
+<!-- ─────────── SIGN-IN MODAL ─────────── -->
+<div class="modal-backdrop" id="auth-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div class="modal-card">
+    <button class="modal-close" data-close-modal aria-label="Close">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <img src="logo.png" alt="" class="modal-logo" />
+    <h2 class="modal-title" id="modal-title">Welcome back</h2>
+    <p class="modal-sub" id="modal-sub">Sign in to access your projects, themes, and build history.</p>
+
+    <div class="form-error" id="form-error"></div>
+
+    <form id="auth-form">
+      <div class="form-field" id="name-field" style="display:none;">
+        <label for="name">Your name</label>
+        <input type="text" id="name" name="name" placeholder="Jane Doe" autocomplete="name" />
+      </div>
+      <div class="form-field">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" placeholder="you@example.com" required autocomplete="email" />
+      </div>
+      <div class="form-field">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" placeholder="At least 6 characters" required minlength="6" autocomplete="current-password" />
+      </div>
+      <button type="submit" class="btn btn-primary form-submit" id="submit-btn">Sign in</button>
+    </form>
+
+    <div class="modal-divider">or</div>
+
+    <button class="google-btn" id="google-signin" type="button">
+      <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
+        <path fill="#4285F4" d="M17.64 9.205c0-.638-.057-1.252-.164-1.841H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/>
+        <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/>
+        <path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/>
+        <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.892 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/>
+      </svg>
+      Continue with Google
+    </button>
+
+    <p class="modal-foot" id="modal-foot">
+      Don't have an account? <a id="toggle-mode">Sign up</a>
+    </p>
+
+    <div class="modal-meta">
+      <span class="modal-meta-line">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        Stored locally — no password leaves your browser
+      </span>
+    </div>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div class="toast" id="toast">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+  <span id="toast-text">Signed in</span>
+</div>
+
+<script>
+  // ═══════════════════════════════════════════════════════════════
+  //  PARALLAX SCROLL  — sets --scroll-y so CSS can react
+  // ═══════════════════════════════════════════════════════════════
+  let scrollY = 0, ticking = false;
+  function updateScroll() {
+    document.documentElement.style.setProperty("--scroll-y", scrollY);
+    ticking = false;
+  }
+  window.addEventListener("scroll", () => {
+    scrollY = window.scrollY;
+    if (!ticking) { requestAnimationFrame(updateScroll); ticking = true; }
+  }, { passive: true });
+
+  // ═══════════════════════════════════════════════════════════════
+  //  STICKY NAV
+  // ═══════════════════════════════════════════════════════════════
+  const nav = document.querySelector("nav.top");
+  window.addEventListener("scroll", () => {
+    nav.classList.toggle("scrolled", window.scrollY > 8);
+  }, { passive: true });
+
+  // ═══════════════════════════════════════════════════════════════
+  //  REVEAL-ON-SCROLL
+  // ═══════════════════════════════════════════════════════════════
+  const io = new IntersectionObserver((entries) => {
+    for (const e of entries) {
+      if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); }
+    }
+  }, { threshold: 0.12, rootMargin: "0px 0px -40px 0px" });
+  for (const el of document.querySelectorAll(".reveal")) io.observe(el);
+
+  // ═══════════════════════════════════════════════════════════════
+  //  THEME TOGGLE — persisted in localStorage
+  // ═══════════════════════════════════════════════════════════════
+  const THEME_KEY = "toodesktop_theme";
+  const html = document.documentElement;
+  const themeToggle = document.getElementById("theme-toggle");
+
+  // Initialize from saved preference (or system default).
+  const savedTheme = localStorage.getItem(THEME_KEY);
+  if (savedTheme) {
+    html.setAttribute("data-theme", savedTheme);
+  } else if (window.matchMedia("(prefers-color-scheme: light)").matches) {
+    html.setAttribute("data-theme", "light");
+  }
+  themeToggle.addEventListener("click", () => {
+    const next = html.getAttribute("data-theme") === "light" ? "dark" : "light";
+    html.setAttribute("data-theme", next);
+    localStorage.setItem(THEME_KEY, next);
+  });
+
+  // ═══════════════════════════════════════════════════════════════
+  //  SCROLL-PINNED WIZARD STAGES
+  // ═══════════════════════════════════════════════════════════════
+  const wizardSection = document.getElementById("wizard");
+  const stageCopies   = wizardSection.querySelectorAll(".stage-copy");
+  const stageMocks    = wizardSection.querySelectorAll(".stage-mock");
+  const wpBars        = wizardSection.querySelectorAll(".wp-bar");
+  const wpLabel       = wizardSection.querySelector("[data-progress-label]");
+  const mockTitleEl   = wizardSection.querySelector("[data-mock-title]");
+  const typedEl       = wizardSection.querySelector("[data-typed]");
+  const STAGE_TITLES = [
+    "TooDesktop — New project",
+    "TooDesktop — Pick a theme",
+    "TooDesktop — Building Notion",
+    "TooDesktop — Done"
+  ];
+  const TYPE_TARGET = "https://notion.so";
+  const STAGES = 4;
+
+  let lastStage = -1, typeIv;
+  function setStage(stage) {
+    if (stage === lastStage) return;
+    stageCopies.forEach((el, i) => el.classList.toggle("active", i === stage));
+    stageMocks.forEach((el, i)  => el.classList.toggle("active", i === stage));
+    wpBars.forEach((el, i) => {
+      el.classList.toggle("current", i === stage);
+      el.classList.toggle("done", i < stage);
+    });
+    if (wpLabel) wpLabel.textContent = String(stage + 1).padStart(2, "0") + " / 04";
+    if (mockTitleEl) mockTitleEl.textContent = STAGE_TITLES[stage];
+    if (stage === 0 && typedEl) {
+      clearInterval(typeIv);
+      typedEl.textContent = "";
+      let i = 0;
+      typeIv = setInterval(() => {
+        typedEl.textContent = TYPE_TARGET.slice(0, ++i);
+        if (i >= TYPE_TARGET.length) clearInterval(typeIv);
+      }, 60);
+    }
+    lastStage = stage;
+  }
+
+  function updateWizard() {
+    const rect = wizardSection.getBoundingClientRect();
+    const vh = window.innerHeight;
+    const scrollable = wizardSection.offsetHeight - vh;
+    const p = Math.max(0, Math.min(1, -rect.top / scrollable));
+    let stage = Math.min(STAGES - 1, Math.floor(p * STAGES));
+    if (p >= 1) stage = STAGES - 1;
+    setStage(stage);
+  }
+  window.addEventListener("scroll", updateWizard, { passive: true });
+  setStage(0);
+
+  // ═══════════════════════════════════════════════════════════════
+  //  AUTH — modal + email/password + Google + localStorage state
+  // ═══════════════════════════════════════════════════════════════
+  const USER_KEY = "toodesktop_user";
+  const USERS_KEY = "toodesktop_users";
+
+  const modal      = document.getElementById("auth-modal");
+  const modalTitle = document.getElementById("modal-title");
+  const modalSub   = document.getElementById("modal-sub");
+  const modalFoot  = document.getElementById("modal-foot");
+  const nameField  = document.getElementById("name-field");
+  const submitBtn  = document.getElementById("submit-btn");
+  const form       = document.getElementById("auth-form");
+  const errorBox   = document.getElementById("form-error");
+  const toggleMode = document.getElementById("toggle-mode");
+  const authButtons= document.getElementById("auth-buttons");
+  const userChip   = document.getElementById("user-chip");
+  const userMenu   = document.getElementById("user-menu");
+  const userName   = document.getElementById("user-name");
+  const userAvatar = document.getElementById("user-avatar");
+  const menuName   = document.getElementById("menu-name");
+  const menuEmail  = document.getElementById("menu-email");
+  const toast      = document.getElementById("toast");
+  const toastText  = document.getElementById("toast-text");
+
+  let modalMode = "signin"; // "signin" | "signup"
+
+  function openModal(mode) {
+    modalMode = mode;
+    if (mode === "signup") {
+      modalTitle.textContent = "Create your account";
+      modalSub.textContent = "Start your 14-day free trial — add a card at Paddle, cancel anytime.";
+      nameField.style.display = "block";
+      document.getElementById("name").required = true;
+      document.getElementById("password").setAttribute("autocomplete", "new-password");
+      submitBtn.textContent = "Create account";
+      modalFoot.innerHTML = `Already have an account? <a id="toggle-mode">Sign in</a>`;
+    } else {
+      modalTitle.textContent = "Welcome back";
+      modalSub.textContent = "Sign in to access your projects, themes, and build history.";
+      nameField.style.display = "none";
+      document.getElementById("name").required = false;
+      document.getElementById("password").setAttribute("autocomplete", "current-password");
+      submitBtn.textContent = "Sign in";
+      modalFoot.innerHTML = `Don't have an account? <a id="toggle-mode">Sign up</a>`;
+    }
+    // Rebind toggle since innerHTML replaced the element
+    document.getElementById("toggle-mode").addEventListener("click", () => {
+      openModal(modalMode === "signin" ? "signup" : "signin");
+    });
+    errorBox.classList.remove("show");
+    modal.classList.add("open");
+    document.body.style.overflow = "hidden";
+    setTimeout(() => document.getElementById("email").focus(), 100);
+  }
+  function closeModal() {
+    modal.classList.remove("open");
+    document.body.style.overflow = "";
+    form.reset();
+    errorBox.classList.remove("show");
+  }
+
+  function showError(msg) {
+    errorBox.textContent = msg;
+    errorBox.classList.add("show");
+  }
+  function showToast(msg) {
+    toastText.textContent = msg;
+    toast.classList.add("show");
+    setTimeout(() => toast.classList.remove("show"), 2800);
+  }
+
+  // Wire all elements that open the modal
+  document.querySelectorAll("[data-open-signin]").forEach(el => {
+    el.addEventListener("click", (e) => { e.preventDefault(); openModal("signin"); });
+  });
+  document.querySelectorAll("[data-open-signup]").forEach(el => {
+    el.addEventListener("click", (e) => { e.preventDefault(); openModal("signup"); });
+  });
+  document.querySelectorAll("[data-close-modal]").forEach(el => {
+    el.addEventListener("click", closeModal);
+  });
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) closeModal();
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && modal.classList.contains("open")) closeModal();
+  });
+
+  toggleMode.addEventListener("click", () => {
+    openModal(modalMode === "signin" ? "signup" : "signin");
+  });
+
+  // Form submission
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    errorBox.classList.remove("show");
+    const email = form.email.value.trim().toLowerCase();
+    const password = form.password.value;
+    const name = (form.name?.value || "").trim();
+
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { showError("Please enter a valid email address."); return; }
+    if (password.length < 6) { showError("Password must be at least 6 characters."); return; }
+
+    // Read existing accounts. We hash the password into a stored
+    // "key" so it's not stored as plaintext in localStorage.
+    const users = JSON.parse(localStorage.getItem(USERS_KEY) || "{}");
+
+    if (modalMode === "signup") {
+      if (!name) { showError("Please enter your name."); return; }
+      if (users[email]) { showError("An account with this email already exists. Try signing in instead."); return; }
+      const passKey = simpleHash(password);
+      users[email] = { name, passKey, createdAt: new Date().toISOString() };
+      localStorage.setItem(USERS_KEY, JSON.stringify(users));
+      signInUser({ email, name, provider: "email" });
+      showToast(`Welcome, ${name.split(" ")[0]}! Your free trial has started.`);
+    } else {
+      const account = users[email];
+      if (!account) { showError("No account found with that email. Want to sign up instead?"); return; }
+      if (account.passKey !== simpleHash(password)) { showError("That password doesn't look right."); return; }
+      signInUser({ email, name: account.name, provider: "email" });
+      showToast(`Welcome back, ${account.name.split(" ")[0]}!`);
+    }
+    closeModal();
+  });
+
+  // ═══════════════════════════════════════════════════════════════
+  //  REAL GOOGLE SIGN-IN — Google Identity Services (gsi/client)
+  //
+  //  SETUP CHECKLIST (one-time, in Google Cloud Console):
+  //    1. Visit https://console.cloud.google.com/apis/credentials
+  //    2. Open the OAuth 2.0 Client ID below (or create a NEW one of
+  //       type "Web application" if this one is "installed/desktop").
+  //    3. Under "Authorized JavaScript origins" add the URL(s) you'll
+  //       serve this page from — e.g. http://localhost:5173,
+  //       http://localhost:8080, https://toodesktop.app
+  //    4. Save. Wait ~1 minute for changes to propagate.
+  //
+  //  IMPORTANT: Google sign-in does NOT work from file:// URLs.
+  //  Serve the landing/ folder with any static server, e.g.:
+  //      npx serve landing
+  //      python -m http.server 8080 --directory landing
+  //  ═══════════════════════════════════════════════════════════════
+  const CONFIG = {
+    // Web application OAuth client ID — from
+    // client_secret_992737678384-s9e0pldanoj67glvfknvn1bk0492uneh...json
+    // Authorized JavaScript origin: https://web2desk.netlify.app
+    // For local testing, add http://localhost:<port> to the same client's
+    // authorized origins in Google Cloud Console.
+    GOOGLE_CLIENT_ID: "992737678384-s9e0pldanoj67glvfknvn1bk0492uneh.apps.googleusercontent.com"
+  };
+
+  // We use the OAuth 2.0 popup flow (NOT One Tap). One Tap is blocked
+  // when third-party cookies are off, in Brave/Safari, or after recent
+  // dismissals — which is what produced "opt_out_or_no_session" errors.
+  // The popup token-client always works: it opens a real Google account
+  // picker, returns an access token, and we call /userinfo with it.
+  let googleTokenClient = null;
+
+  function initGoogleSignIn() {
+    if (!window.google || !window.google.accounts || !window.google.accounts.oauth2) {
+      setTimeout(initGoogleSignIn, 120);
+      return;
+    }
+    try {
+      googleTokenClient = window.google.accounts.oauth2.initTokenClient({
+        client_id: CONFIG.GOOGLE_CLIENT_ID,
+        scope: "openid email profile",
+        callback: handleGoogleToken,
+        error_callback: (err) => {
+          if (!err || err.type === "popup_closed") return; // user dismissed the popup
+          if (err.type === "popup_failed_to_open") {
+            showError("Google sign-in popup was blocked. Allow popups for this site and try again.");
+          } else {
+            showError(`Google sign-in error: ${err.type || "unknown"}.`);
+          }
+        }
+      });
+    } catch (e) {
+      console.error("Google OAuth init failed:", e);
+    }
+  }
+  initGoogleSignIn();
+
+  // Token-client callback: fetch the user profile with the access token.
+  async function handleGoogleToken(resp) {
+    if (resp.error) {
+      showError(`Google sign-in failed: ${resp.error}`);
+      return;
+    }
+    try {
+      const r = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+        headers: { Authorization: `Bearer ${resp.access_token}` }
+      });
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      const profile = await r.json();
+      if (!profile.email) throw new Error("No email returned");
+      signInUser({
+        email: profile.email,
+        name: profile.name || profile.given_name || profile.email.split("@")[0],
+        picture: profile.picture || null,
+        sub: profile.sub,
+        provider: "google"
+      });
+      showToast(`Welcome, ${(profile.given_name || profile.name || "").split(" ")[0] || "back"}!`);
+      closeModal();
+    } catch (e) {
+      console.error("Profile fetch failed:", e);
+      showError("Signed in with Google, but couldn't load your profile. Try again.");
+    }
+  }
+
+  document.getElementById("google-signin").addEventListener("click", () => {
+    if (location.protocol === "file:") {
+      showError("Google sign-in needs the page served over http(s), not a file:// URL. Run: npx serve landing");
+      return;
+    }
+    if (!googleTokenClient) {
+      showError("Google sign-in is still loading. Try again in a moment.");
+      return;
+    }
+    errorBox.classList.remove("show");
+    // Opens the real Google account picker popup.
+    googleTokenClient.requestAccessToken({ prompt: "" });
+  });
+
+  // Tiny deterministic hash — enough to avoid plaintext storage for a
+  // client-only demo. NOT a security primitive.
+  function simpleHash(str) {
+    let h = 0;
+    for (let i = 0; i < str.length; i++) {
+      h = ((h << 5) - h) + str.charCodeAt(i);
+      h |= 0;
+    }
+    return "h" + (h >>> 0).toString(36);
+  }
+
+  function signInUser(user) {
+    localStorage.setItem(USER_KEY, JSON.stringify({ ...user, signedInAt: new Date().toISOString() }));
+    renderAuthState();
+  }
+  function signOutUser() {
+    localStorage.removeItem(USER_KEY);
+    renderAuthState();
+    showToast("You've been signed out.");
+  }
+  function renderAuthState() {
+    const raw = localStorage.getItem(USER_KEY);
+    if (!raw) {
+      authButtons.classList.remove("hide");
+      userChip.classList.remove("show");
+      userMenu.classList.remove("open");
+      return;
+    }
+    try {
+      const user = JSON.parse(raw);
+      authButtons.classList.add("hide");
+      userChip.classList.add("show");
+      userName.textContent = user.name.split(" ")[0];
+      userAvatar.textContent = (user.name[0] || user.email[0]).toUpperCase();
+      menuName.textContent = user.name;
+      menuEmail.textContent = user.email;
+    } catch {
+      localStorage.removeItem(USER_KEY);
+    }
+  }
+  renderAuthState();
+
+  // User menu open/close
+  userChip.addEventListener("click", (e) => {
+    e.stopPropagation();
+    userMenu.classList.toggle("open");
+  });
+  document.addEventListener("click", (e) => {
+    if (!userMenu.contains(e.target) && !userChip.contains(e.target)) {
+      userMenu.classList.remove("open");
+    }
+  });
+  document.getElementById("sign-out").addEventListener("click", () => {
+    userMenu.classList.remove("open");
+    signOutUser();
+  });
+</script>
+
+</body>
+</html>

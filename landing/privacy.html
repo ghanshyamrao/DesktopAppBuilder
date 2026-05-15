@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Privacy Policy — TooDesktop</title>
+<meta name="description" content="Privacy Policy for TooDesktop — what we collect, how we use it, and the choices you have over your data." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="icon" type="image/png" href="logo.png" />
+<style>
+  :root,
+  [data-theme="dark"] {
+    --bg: #0b0b0f;
+    --bg-2: #131319;
+    --surface: rgba(22, 23, 30, 0.55);
+    --border: rgba(255, 255, 255, 0.08);
+    --border-strong: rgba(255, 255, 255, 0.16);
+    --text: #f5f5f7;
+    --text-mut: rgba(245, 245, 247, 0.62);
+    --text-dim: rgba(245, 245, 247, 0.4);
+    --accent-blue: #5b9dff;
+    --accent-violet: #a78bfa;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Inter", -apple-system, "Segoe UI", system-ui, sans-serif;
+    font-size: 15px; line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  a { color: var(--accent-blue); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .wrap-narrow { max-width: 820px; margin: 0 auto; padding: 0 24px; }
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+  .mesh {
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background:
+      radial-gradient(60% 40% at 10% -10%, rgba(167,139,250,0.18) 0%, transparent 60%),
+      radial-gradient(45% 35% at 100% 0%, rgba(34,211,238,0.10) 0%, transparent 60%),
+      radial-gradient(50% 45% at 50% 110%, rgba(91,157,255,0.12) 0%, transparent 60%);
+  }
+
+  .nav {
+    position: sticky; top: 0; z-index: 50;
+    backdrop-filter: blur(14px);
+    background: rgba(11, 11, 15, 0.72);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-inner {
+    display: flex; align-items: center; justify-content: space-between;
+    height: 64px;
+  }
+  .brand {
+    display: flex; align-items: center; gap: 10px;
+    font-weight: 700; font-size: 15px; color: var(--text);
+  }
+  .brand:hover { text-decoration: none; }
+  .brand-mark { width: 26px; height: 26px; border-radius: 7px; }
+  .nav-back {
+    font-size: 14px; color: var(--text-mut);
+  }
+  .nav-back:hover { color: var(--text); text-decoration: none; }
+
+  main { position: relative; z-index: 1; }
+  .legal-head {
+    padding: 72px 0 32px;
+    text-align: center;
+  }
+  .eyebrow {
+    display: inline-block;
+    font-size: 12px; font-weight: 600;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--accent-violet);
+    padding: 6px 12px;
+    border: 1px solid rgba(167, 139, 250, 0.3);
+    border-radius: 999px;
+    margin-bottom: 18px;
+  }
+  .legal-head h1 {
+    font-size: clamp(34px, 5vw, 48px);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    margin-bottom: 14px;
+    background: linear-gradient(135deg, #f5f5f7 0%, #a78bfa 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .meta { color: var(--text-dim); font-size: 14px; }
+
+  .prose {
+    padding: 24px 0 96px;
+    color: var(--text);
+  }
+  .prose h2 {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin: 44px 0 14px;
+    color: var(--text);
+  }
+  .prose h2:first-child { margin-top: 0; }
+  .prose h3 {
+    font-size: 17px;
+    font-weight: 600;
+    margin: 28px 0 10px;
+    color: var(--text);
+  }
+  .prose p { color: var(--text-mut); margin-bottom: 14px; }
+  .prose ul, .prose ol {
+    color: var(--text-mut);
+    margin: 0 0 16px 22px;
+  }
+  .prose li { margin-bottom: 8px; }
+  .prose strong { color: var(--text); font-weight: 600; }
+  .prose code {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 13px;
+    padding: 2px 6px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+  }
+  .prose table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0 22px;
+    font-size: 14px;
+  }
+  .prose th, .prose td {
+    text-align: left;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  .prose th {
+    color: var(--text);
+    font-weight: 600;
+    background: rgba(255, 255, 255, 0.03);
+  }
+  .prose td { color: var(--text-mut); }
+
+  footer.bottom {
+    border-top: 1px solid var(--border);
+    background: rgba(11, 11, 15, 0.6);
+    padding: 36px 0;
+    position: relative; z-index: 1;
+  }
+  .foot-row {
+    display: flex; flex-wrap: wrap; gap: 16px;
+    align-items: center; justify-content: space-between;
+    color: var(--text-dim); font-size: 13.5px;
+  }
+  .foot-links { display: flex; flex-wrap: wrap; gap: 18px; }
+  .foot-links a { color: var(--text-mut); }
+  .foot-links a:hover { color: var(--text); text-decoration: none; }
+</style>
+</head>
+<body>
+<div class="mesh"></div>
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a href="index.html" class="brand">
+      <img src="logo.png" alt="TooDesktop" class="brand-mark" />
+      <span>TooDesktop</span>
+    </a>
+    <a href="index.html" class="nav-back">← Back to home</a>
+  </div>
+</nav>
+
+<main>
+  <div class="wrap-narrow">
+    <header class="legal-head">
+      <span class="eyebrow">Legal</span>
+      <h1>Privacy Policy</h1>
+      <p class="meta">Last updated: May 14, 2026</p>
+    </header>
+
+    <article class="prose">
+      <p>This Privacy Policy explains what information TooDesktop ("we", "us", "our") collects when you use our website, builder, and related services (the "Service"), how we use it, and the choices you have. By using the Service, you agree to this policy.</p>
+
+      <h2>1. Information we collect</h2>
+
+      <h3>a. Account information</h3>
+      <p>When you create an account, we collect:</p>
+      <ul>
+        <li>Your name and email address.</li>
+        <li>A password (stored as a salted hash — we never store the plaintext) or, if you sign in with Google, the basic profile information Google shares with us (name, email, profile picture, Google account ID).</li>
+      </ul>
+
+      <h3>b. Project & build data</h3>
+      <p>To build your desktop apps, we may store:</p>
+      <ul>
+        <li>Project configurations (app name, target URL, theme settings, window options, icons, branding assets you upload).</li>
+        <li>Build artifacts and logs.</li>
+      </ul>
+      <p>This data exists to operate the Service. You can delete projects at any time from your dashboard.</p>
+
+      <h3>c. Payment information</h3>
+      <p>If you subscribe to a paid plan, payments are processed by <strong>Stripe</strong>. We receive limited information from Stripe such as your subscription status, plan, billing country, and the last four digits of your card. <strong>We never receive or store your full card number.</strong> Stripe's own privacy policy applies to data they collect.</p>
+
+      <h3>d. Usage & device data</h3>
+      <p>When you use the website or the builder, we automatically collect:</p>
+      <ul>
+        <li>IP address (used for security, fraud prevention, and approximate location).</li>
+        <li>Browser or app version, operating system, and screen size.</li>
+        <li>Pages or features you interact with, and timestamps.</li>
+        <li>Error reports and diagnostic logs.</li>
+      </ul>
+
+      <h3>e. Communications</h3>
+      <p>If you email us or contact support, we keep a copy of that correspondence so we can help you.</p>
+
+      <h2>2. How we use information</h2>
+      <p>We use the information above to:</p>
+      <ul>
+        <li>Operate, maintain, and improve the Service.</li>
+        <li>Build and deliver the desktop apps you create.</li>
+        <li>Process payments and manage subscriptions.</li>
+        <li>Authenticate you and protect your account.</li>
+        <li>Detect, investigate, and prevent fraud, abuse, and security incidents.</li>
+        <li>Respond to support requests and communicate about your account or the Service.</li>
+        <li>Comply with legal obligations.</li>
+      </ul>
+      <p>We do <strong>not</strong> sell your personal information, and we do not use it for advertising.</p>
+
+      <h2>3. Service providers we share data with</h2>
+      <p>We share the minimum information necessary with the following categories of providers:</p>
+      <table>
+        <thead>
+          <tr><th>Provider</th><th>Purpose</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Stripe</td><td>Payment processing &amp; subscription billing</td></tr>
+          <tr><td>Google (OAuth)</td><td>"Sign in with Google" authentication</td></tr>
+          <tr><td>Hosting &amp; cloud storage providers</td><td>Running the Service infrastructure</td></tr>
+          <tr><td>Email delivery provider</td><td>Transactional emails (receipts, password resets, etc.)</td></tr>
+          <tr><td>Product analytics &amp; error monitoring</td><td>Understanding usage and fixing crashes</td></tr>
+        </tbody>
+      </table>
+      <p>These providers are contractually required to protect your data and use it only to provide services to us.</p>
+      <p>We may also disclose information if required by law, subpoena, or other legal process, or to protect the rights, property, or safety of TooDesktop, our users, or the public.</p>
+
+      <h2>4. Cookies & similar technologies</h2>
+      <p>We use a small number of cookies and similar technologies for:</p>
+      <ul>
+        <li><strong>Authentication</strong> — to keep you signed in.</li>
+        <li><strong>Preferences</strong> — to remember settings like theme.</li>
+        <li><strong>Security</strong> — to detect suspicious activity.</li>
+        <li><strong>Analytics</strong> — to understand which features are used (aggregated, no profile building).</li>
+      </ul>
+      <p>You can clear cookies through your browser settings; doing so may sign you out and reset preferences.</p>
+
+      <h2>5. Data retention</h2>
+      <p>We keep your account information for as long as your account is active. When you delete your account, we delete or anonymize personal information within a reasonable period, except where we are required to keep it longer (for example, transaction records for tax and accounting purposes).</p>
+
+      <h2>6. Security</h2>
+      <p>We use industry-standard safeguards to protect your data, including encryption in transit (HTTPS), encryption at rest where appropriate, hashed passwords, access controls, and monitoring. No system is perfectly secure, but we work hard to keep yours safe and we will notify you of any incident that materially affects your data, as required by law.</p>
+
+      <h2>7. Your rights</h2>
+      <p>Depending on where you live, you may have rights to:</p>
+      <ul>
+        <li>Access the personal information we hold about you.</li>
+        <li>Correct inaccurate information.</li>
+        <li>Delete your personal information.</li>
+        <li>Object to or restrict certain processing.</li>
+        <li>Receive a portable copy of your data.</li>
+        <li>Withdraw consent at any time, where processing is based on consent.</li>
+      </ul>
+      <p>To exercise these rights, email us at <a href="mailto:privacy@toodesktop.com">privacy@toodesktop.com</a>. We may need to verify your identity before acting on a request.</p>
+
+      <h2>8. International transfers</h2>
+      <p>TooDesktop may be operated from, and your data may be processed in, countries other than your own. Where required by law, we put in place appropriate safeguards (such as standard contractual clauses) for cross-border transfers.</p>
+
+      <h2>9. Children</h2>
+      <p>The Service is not directed to children under 16, and we do not knowingly collect personal information from children under 16. If you believe a child has provided us information, please contact us so we can delete it.</p>
+
+      <h2>10. Changes to this policy</h2>
+      <p>We may update this Privacy Policy from time to time. If we make a material change, we'll update the "Last updated" date above and, where appropriate, notify you by email or in-app notice.</p>
+
+      <h2>11. Contact</h2>
+      <p>For privacy questions or requests, email <a href="mailto:privacy@toodesktop.com">privacy@toodesktop.com</a>.</p>
+    </article>
+  </div>
+</main>
+
+<footer class="bottom">
+  <div class="wrap foot-row">
+    <div>© 2026 TooDesktop. All rights reserved.</div>
+    <div class="foot-links">
+      <a href="index.html">Home</a>
+      <a href="terms.html">Terms</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="refund.html">Refund</a>
+    </div>
+  </div>
+</footer>
+</body>
+</html>

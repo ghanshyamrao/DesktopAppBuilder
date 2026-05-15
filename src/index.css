@@ -1,0 +1,213 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Theme tokens. Each [data-theme="…"] block is a self-contained palette.
+   The active theme is applied to <html data-theme="…"> at boot by
+   src/lib/theme.ts and switched in Settings → Appearance.
+
+   Surface + text + accent colors are *RGB triplets* so Tailwind's opacity
+   utilities (`bg-bg-card/70`, `text-text-secondary/60`) compile to
+   `rgb(var(--…) / 0.7)`. Borders are full color values because they bake
+   alpha into the variable.
+
+   "custom" inherits from dark by default; the JS theme apply layer
+   overrides --accent-blue (and a couple of derived vars) when the user
+   picks a custom accent.
+   ────────────────────────────────────────────────────────────────────── */
+
+:root,
+[data-theme="dark"],
+[data-theme="custom"] {
+  color-scheme: dark;
+
+  --bg:        7   9  16;
+  --bg-panel: 11  15  24;
+  --bg-card:  16  22  34;
+  --bg-input: 14  19  32;
+  --bg-elev:  21  28  43;
+
+  --text-primary:   230 234 242;
+  --text-secondary: 154 163 184;
+  --text-muted:      92 100 120;
+  --text-inverse:    11  15  24;
+
+  --border:        rgba(255, 255, 255, 0.06);
+  --border-strong: rgba(255, 255, 255, 0.10);
+  --border-glow:   rgba(122, 162, 255, 0.35);
+
+  --accent-blue:    91 157 255;
+  --accent-cyan:    34 211 238;
+  --accent-violet: 167 139 250;
+  --accent-pink:   244 114 182;
+  --accent-green:   52 211 153;
+  --accent-amber:  245 158  11;
+  --accent-yellow: 245 158  11;
+  --accent-red:    248 113 113;
+
+  --canvas-bg:        #070910;
+  --canvas-grad-1:    radial-gradient(800px 400px at 0% 0%,    rgba( 91,157,255,0.06), transparent 60%);
+  --canvas-grad-2:    radial-gradient(900px 500px at 100% 100%, rgba(167,139,250,0.05), transparent 60%);
+
+  --scrollbar-thumb:       rgba(255, 255, 255, 0.06);
+  --scrollbar-thumb-hover: rgba(255, 255, 255, 0.12);
+
+  --shadow-glass: 0 1px 0 0 rgba(255,255,255,0.04) inset, 0 24px 64px -24px rgba(0,0,0,0.6);
+  --shadow-elev:  0 8px 32px -12px rgba(0,0,0,0.55), 0 2px 6px -2px rgba(0,0,0,0.4);
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+
+  --bg:        247 248 252;
+  --bg-panel:  255 255 255;
+  --bg-card:   255 255 255;
+  --bg-input:  244 246 251;
+  --bg-elev:   240 244 250;
+
+  --text-primary:    15  23  42;
+  --text-secondary:  71  85 105;
+  --text-muted:     148 163 184;
+  --text-inverse:   255 255 255;
+
+  --border:        rgba(15, 23, 42, 0.10);
+  --border-strong: rgba(15, 23, 42, 0.18);
+  --border-glow:   rgba(37, 99, 235, 0.35);
+
+  --accent-blue:    37  99 235;
+  --accent-cyan:     8 145 178;
+  --accent-violet: 124  58 237;
+  --accent-pink:   219  39 119;
+  --accent-green:   22 163  74;
+  --accent-amber:  217 119   6;
+  --accent-yellow: 217 119   6;
+  --accent-red:    220  38  38;
+
+  --canvas-bg:     #f5f7fb;
+  --canvas-grad-1: radial-gradient(800px 400px at 0% 0%,    rgba(37,99,235,0.05),  transparent 60%);
+  --canvas-grad-2: radial-gradient(900px 500px at 100% 100%, rgba(124,58,237,0.04), transparent 60%);
+
+  --scrollbar-thumb:       rgba(15, 23, 42, 0.12);
+  --scrollbar-thumb-hover: rgba(15, 23, 42, 0.22);
+
+  --shadow-glass: 0 1px 0 0 rgba(255,255,255,0.6) inset, 0 12px 36px -16px rgba(15,23,42,0.18);
+  --shadow-elev:  0 8px 32px -12px rgba(15,23,42,0.14), 0 2px 6px -2px rgba(15,23,42,0.08);
+}
+
+/* Layout-only variables (theme-agnostic). Kept on :root so they don't get
+   shadowed by per-theme blocks above. */
+:root {
+  font-size: 15px;
+  --rail-w-collapsed: 64px;
+  --rail-w-expanded: 232px;
+  --topbar-h: 48px;
+  --console-h: 220px;
+}
+
+@media (min-width: 1700px) { :root { font-size: 16px; } }
+@media (min-width: 2000px) { :root { font-size: 17px; } }
+@media (min-width: 2400px) { :root { font-size: 18px; } }
+@media (min-width: 3000px) { :root { font-size: 22px; } }
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  background: var(--canvas-bg);
+}
+
+body {
+  @apply bg-bg text-text-primary font-sans antialiased;
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+  background-image: var(--canvas-grad-1), var(--canvas-grad-2);
+  background-attachment: fixed;
+}
+
+input, textarea {
+  user-select: text;
+}
+
+::-webkit-scrollbar         { width: 10px; height: 10px; }
+::-webkit-scrollbar-track   { background: transparent; }
+::-webkit-scrollbar-thumb   { background: var(--scrollbar-thumb); border-radius: 8px; }
+::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-thumb-hover); }
+
+/* The chrome's drag region — the topbar uses this so the user can drag
+   the window from any empty space. Buttons inside opt out via .no-drag. */
+.app-drag    { -webkit-app-region: drag; }
+.no-drag     { -webkit-app-region: no-drag; }
+
+@layer components {
+  /* ---------- surfaces ---------- */
+  .glass {
+    @apply bg-bg-card/70 backdrop-blur-xl border border-border shadow-glass;
+    background-image: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0));
+  }
+  .glass-strong {
+    @apply bg-bg-panel/85 backdrop-blur-2xl border border-border shadow-elev;
+  }
+  .panel {
+    @apply bg-bg-card border border-border rounded-xl;
+  }
+  .raised {
+    @apply bg-bg-elev border border-border rounded-lg;
+  }
+
+  /* ---------- inputs ---------- */
+  .input {
+    @apply w-full bg-bg-input/80 border border-border rounded-lg px-3.5 py-2.5 text-sm text-text-primary placeholder:text-text-muted
+           focus:outline-none focus:border-accent-blue/60 focus:ring-2 focus:ring-accent-blue/20 transition;
+  }
+  .label {
+    @apply text-xs font-medium text-text-secondary mb-1.5 block uppercase tracking-wider;
+  }
+  .helper {
+    @apply text-xs text-text-secondary mt-1;
+  }
+
+  /* ---------- buttons (low-level only; <Button/> primitive sits on top) ---------- */
+  .btn-base {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg text-sm font-medium transition
+           disabled:opacity-50 disabled:cursor-not-allowed select-none;
+  }
+
+  /* ---------- chrome bits ---------- */
+  .rail-item {
+    @apply flex items-center gap-3 h-10 rounded-lg text-sm text-text-secondary
+           hover:text-text-primary hover:bg-white/[0.04] transition relative;
+  }
+  .rail-item-active {
+    @apply text-text-primary bg-white/[0.05];
+  }
+  .rail-item-active::before {
+    content: "";
+    position: absolute;
+    left: -10px;
+    top: 8px; bottom: 8px;
+    width: 3px;
+    border-radius: 3px;
+    background: linear-gradient(180deg, #5B9DFF, #A78BFA);
+    box-shadow: 0 0 12px rgba(91,157,255,0.6);
+  }
+
+  /* ---------- accents ---------- */
+  .neon-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(91,157,255,0.4), transparent);
+  }
+  .text-gradient {
+    background: linear-gradient(90deg, #5B9DFF, #A78BFA);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* ---------- skeleton ---------- */
+  .skeleton {
+    background: linear-gradient(90deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 100%);
+    background-size: 200% 100%;
+    animation: shimmer 1.6s linear infinite;
+  }
+}
