@@ -34,12 +34,23 @@ export interface Notification {
   dedupeKey?: string;
 }
 
-const NOTIF_STORAGE_KEY = "w2a:notifications";
+const NOTIF_STORAGE_PREFIX = "w2a:notifications";
+const NOTIF_LEGACY_KEY = "w2a:notifications"; // pre-per-user shared slot
 const NOTIF_LIMIT = 50;
 
-function loadStoredNotifications(): Notification[] {
+/** Per-user notification scope. Set by AuthGate via `setUserScope(sub)`
+ *  on sign-in (and `null` on sign-out). While null, notifications still
+ *  function in memory but writes target the "anon" slot which never gets
+ *  read back — effectively making the bell ephemeral when signed out. */
+let currentNotifScope: string | null = null;
+
+function notifKey(scope: string | null): string {
+  return scope ? `${NOTIF_STORAGE_PREFIX}:${scope}` : `${NOTIF_STORAGE_PREFIX}:anon`;
+}
+
+function loadStoredNotifications(scope: string | null): Notification[] {
   try {
-    const raw = localStorage.getItem(NOTIF_STORAGE_KEY);
+    const raw = localStorage.getItem(notifKey(scope));
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [];
@@ -49,9 +60,25 @@ function loadStoredNotifications(): Notification[] {
   } catch { return []; }
 }
 
-function persistNotifications(list: Notification[]): void {
-  try { localStorage.setItem(NOTIF_STORAGE_KEY, JSON.stringify(list.slice(0, NOTIF_LIMIT))); }
+function persistNotifications(scope: string | null, list: Notification[]): void {
+  try { localStorage.setItem(notifKey(scope), JSON.stringify(list.slice(0, NOTIF_LIMIT))); }
   catch { /* localStorage can be unavailable — non-fatal */ }
+}
+
+/** One-shot migration from the pre-per-user shared slot. Runs the first
+ *  time a user signs in after this code ships — if `w2a:notifications`
+ *  has entries and the user's per-user slot is empty, those legacy rows
+ *  get claimed by that user (mirroring the project-claim migration in
+ *  electron/ipc/handlers.ts). The legacy key is removed afterwards so a
+ *  second account never inherits the same rows. */
+function migrateLegacyNotifications(scope: string): void {
+  try {
+    const legacy = localStorage.getItem(NOTIF_LEGACY_KEY);
+    if (!legacy) return;
+    const existing = localStorage.getItem(notifKey(scope));
+    if (!existing) localStorage.setItem(notifKey(scope), legacy);
+    localStorage.removeItem(NOTIF_LEGACY_KEY);
+  } catch { /* non-fatal */ }
 }
 
 interface AppState {
@@ -101,6 +128,10 @@ interface AppState {
   markAllNotificationsRead: () => void;
   removeNotification: (id: string) => void;
   clearNotifications: () => void;
+  /** Bind the store to a user. Called by AuthGate on sign-in (with the
+   *  Google sub) and sign-out (with null). Reloads notifications from
+   *  that user's localStorage slot so each user has their own history. */
+  setUserScope: (sub: string | null) => void;
 }
 
 export const useAppStore = create<AppState>((set, get) => ({
@@ -201,7 +232,10 @@ export const useAppStore = create<AppState>((set, get) => ({
       };
     }),
 
-  notifications: loadStoredNotifications(),
+  // Start empty — `setUserScope(sub)` reloads from the right slot once
+  // AuthGate has confirmed which user is signed in. Prevents a flash of
+  // another account's notifications between boot and auth resolution.
+  notifications: [],
   pushNotification: (n) =>
     set((state) => {
       // Drop any earlier entry with the same dedupeKey so re-running a build
@@ -213,31 +247,36 @@ export const useAppStore = create<AppState>((set, get) => ({
         { ...n, id: nanoid(), createdAt: new Date().toISOString() },
         ...filtered,
       ].slice(0, NOTIF_LIMIT);
-      persistNotifications(next);
+      persistNotifications(currentNotifScope, next);
       return { notifications: next };
     }),
   markNotificationRead: (id) =>
     set((state) => {
       const now = new Date().toISOString();
       const next = state.notifications.map((n) => (n.id === id && !n.readAt ? { ...n, readAt: now } : n));
-      persistNotifications(next);
+      persistNotifications(currentNotifScope, next);
       return { notifications: next };
     }),
   markAllNotificationsRead: () =>
     set((state) => {
       const now = new Date().toISOString();
       const next = state.notifications.map((n) => (n.readAt ? n : { ...n, readAt: now }));
-      persistNotifications(next);
+      persistNotifications(currentNotifScope, next);
       return { notifications: next };
     }),
   removeNotification: (id) =>
     set((state) => {
       const next = state.notifications.filter((n) => n.id !== id);
-      persistNotifications(next);
+      persistNotifications(currentNotifScope, next);
       return { notifications: next };
     }),
   clearNotifications: () => {
-    persistNotifications([]);
+    persistNotifications(currentNotifScope, []);
     set({ notifications: [] });
+  },
+  setUserScope: (sub) => {
+    currentNotifScope = sub;
+    if (sub) migrateLegacyNotifications(sub);
+    set({ notifications: loadStoredNotifications(sub) });
   },
 }));

@@ -32,6 +32,7 @@ import { AIService } from "./services/aiService";
 import { AuthService } from "./services/authService";
 import { FirstRunService } from "./services/firstRunService";
 import { PaddleService, summarize } from "./services/paddleService";
+import { EmailService } from "./services/emailService";
 
 // Disable Electron's transparent asar virtualization for the builder's own
 // fs operations. Generated apps' artifacts contain `app.asar` files and
@@ -274,11 +275,23 @@ app.whenReady().then(async () => {
   const settingsStore = new SettingsStore();
   const authService = new AuthService();
   const firstRunService = new FirstRunService();
+  const emailService = new EmailService();
   await projectStore.init();
   await settingsStore.init();
   await authService.init();
   await firstRunService.init();
-  const orchestrator = new BuildOrchestrator(projectStore, settingsStore);
+  await emailService.init();
+  // Now that AuthService has booted (and may already have a refresh-
+  // token-loaded user), connect it to the project store. Every list/get/
+  // create/update/delete will scope projects to the user this resolver
+  // points at — sign-in and sign-out automatically swap visibility.
+  projectStore.setCurrentSubResolver(() => authService.currentUser()?.sub ?? null);
+  // emailService + authService are passed in so the orchestrator can fire
+  // a "your build is ready" email to the signed-in user once a build
+  // finishes successfully. Both args are optional — if email-config.json
+  // is missing the service stays in no-op mode and the orchestrator
+  // silently skips the send step.
+  const orchestrator = new BuildOrchestrator(projectStore, settingsStore, emailService, authService);
   const aiService = new AIService(settingsStore);
   paddleService = new PaddleService();
 

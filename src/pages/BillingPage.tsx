@@ -376,7 +376,11 @@ function CurrentPlanCard({ sub }: { sub: SubscriptionSummary | null }) {
  * expired plans where the parent already shows a renewal CTA.
  */
 function BuildUsageMeter({ sub }: { sub: SubscriptionSummary }) {
-  if (sub.dailyBuildLimit === null) {
+  // Free tier gets a small lifetime demo allowance (no daily cap) — surface
+  // the lifetime counter so users see how many free builds they have left
+  // instead of an "Unlimited" badge that contradicts reality.
+  const isFreeDemo = sub.tier === "free" && sub.totalBuildLimit !== null;
+  if (sub.dailyBuildLimit === null && !isFreeDemo) {
     return (
       <div className="relative shrink-0 hidden sm:flex flex-col items-end gap-1 min-w-[120px]">
         <div className="text-2xs uppercase tracking-[0.14em] text-text-muted font-semibold">Builds today</div>
@@ -387,12 +391,14 @@ function BuildUsageMeter({ sub }: { sub: SubscriptionSummary }) {
       </div>
     );
   }
-  // Trial uses the lifetime cap as the binding number (3 total over
-  // the 14-day window), so the meter shows total — not daily — usage.
+  // Trial and free-demo both use the lifetime cap as the binding number
+  // (free=1 build, trial=3 builds over 14 days), so the meter shows total —
+  // not daily — usage.
   const isTrial = sub.isTrial && sub.totalBuildLimit !== null;
-  const used = isTrial ? sub.buildsUsedTotal : sub.buildsUsedToday;
-  const limit = isTrial ? (sub.totalBuildLimit ?? 0) : sub.dailyBuildLimit;
-  const label = isTrial ? "Trial builds" : "Builds today";
+  const useLifetime = isTrial || isFreeDemo;
+  const used = useLifetime ? sub.buildsUsedTotal : sub.buildsUsedToday;
+  const limit = useLifetime ? (sub.totalBuildLimit ?? 0) : (sub.dailyBuildLimit ?? 0);
+  const label = isTrial ? "Trial builds" : isFreeDemo ? "Free builds" : "Builds today";
   const ratio = limit > 0 ? Math.min(1, used / limit) : 0;
   const danger = ratio >= 0.9;
   const warn = ratio >= 0.66 && !danger;

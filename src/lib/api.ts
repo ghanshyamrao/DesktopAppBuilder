@@ -1,5 +1,6 @@
 import type { IpcResult, AIChatMessage, AIChatContext } from "@/types";
 import { track } from "@/lib/analytics";
+import { isEnabled } from "@/lib/features";
 
 export async function unwrap<T>(promise: Promise<IpcResult<T>>): Promise<T> {
   const result = await promise;
@@ -155,25 +156,31 @@ export const api = {
       // 2. Daily build-limit / trial cap gate. The main-process handler
       //    atomically reserves a slot before we even call `builds:start`,
       //    so two parallel clicks can't both pass when only one slot is
-      //    left. Skipped when the renderer-side gate told us billing is
-      //    off (subOk === true from a no-op gate).
-      const usage = await unwrap(window.w2a.billing.recordBuild());
-      if (!usage.allowed) {
-        // Notify the provider so it can navigate + toast. The thrown
-        // error below is purely for the call site to abort its flow.
-        // `usage.reason` is "ok" | <failure>; `!usage.allowed` narrows out
-        // "ok", but TS can't see the relationship — cast explicitly.
-        onBuildBlocked(usage.reason as BuildBlockedReason, { used: usage.used, limit: usage.limit });
-        if (usage.reason === "trial-exhausted") {
-          track({ name: "build_blocked_trial_exhausted", props: { project_id: projectId, used: usage.used, limit: usage.limit ?? 0 } });
-          throw new TrialExhaustedError(usage.used, usage.limit ?? 0);
+      //    left. Skipped entirely when the PostHog `feature-billing` flag
+      //    is off — that mode is for super-admin / dev testing where
+      //    enforcement must be inert end-to-end (gate + usage counter).
+      const billingEnabled = isEnabled("billing");
+      let usage: { used: number; limit: number | null } = { used: 0, limit: null };
+      if (billingEnabled) {
+        const verdict = await unwrap(window.w2a.billing.recordBuild());
+        if (!verdict.allowed) {
+          // Notify the provider so it can navigate + toast. The thrown
+          // error below is purely for the call site to abort its flow.
+          // `verdict.reason` is "ok" | <failure>; `!verdict.allowed` narrows
+          // out "ok", but TS can't see the relationship — cast explicitly.
+          onBuildBlocked(verdict.reason as BuildBlockedReason, { used: verdict.used, limit: verdict.limit });
+          if (verdict.reason === "trial-exhausted") {
+            track({ name: "build_blocked_trial_exhausted", props: { project_id: projectId, used: verdict.used, limit: verdict.limit ?? 0 } });
+            throw new TrialExhaustedError(verdict.used, verdict.limit ?? 0);
+          }
+          if (verdict.reason === "daily-limit-exceeded") {
+            track({ name: "build_blocked_daily_limit", props: { project_id: projectId, used: verdict.used, limit: verdict.limit ?? 0 } });
+            throw new DailyBuildLimitExceeded(verdict.used, verdict.limit ?? 0);
+          }
+          // "no-subscription" — fall back to the same error the sub gate throws.
+          throw new SubscriptionRequiredError();
         }
-        if (usage.reason === "daily-limit-exceeded") {
-          track({ name: "build_blocked_daily_limit", props: { project_id: projectId, used: usage.used, limit: usage.limit ?? 0 } });
-          throw new DailyBuildLimitExceeded(usage.used, usage.limit ?? 0);
-        }
-        // "no-subscription" — fall back to the same error the sub gate throws.
-        throw new SubscriptionRequiredError();
+        usage = { used: verdict.used, limit: verdict.limit };
       }
 
       // 3. Windows symlink-privilege preflight (unchanged behavior).

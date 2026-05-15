@@ -1,0 +1,10 @@
+{
+  "_comment_security": "Copy this file to 'email-config.json' and fill in your SMTP credentials. NEVER commit the real file. NEVER ship it inside a public installer — anyone who unpacks app.asar can read the SMTP password and spam from your domain. For production, run a small backend (Cloudflare Worker / Vercel function) that holds these creds and exposes a 'send build notification' endpoint the Electron app calls with a short-lived auth token.",
+  "host": "smtp.titan.email",
+  "port": 465,
+  "secure": true,
+  "user": "noreply@toodesktop.com",
+  "password": "<your-smtp-app-password>",
+  "fromName": "WebToDesktop Builder",
+  "fromAddress": "noreply@toodesktop.com"
+}

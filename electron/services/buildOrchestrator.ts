@@ -17,6 +17,9 @@ import { SettingsStore } from "./settingsStore";
 import { TemplateGenerator } from "./templateGenerator";
 import { NodeRuntime, NodeRuntimeError, ResolvedRuntime } from "./nodeRuntime";
 import { trackMain } from "./analytics";
+import type { EmailService } from "./emailService";
+import type { AuthService } from "./authService";
+import { summarize } from "./paddleService";
 
 interface ActiveBuild {
   buildId: string;
@@ -54,7 +57,12 @@ export class BuildOrchestrator {
   private template = new TemplateGenerator();
   private runtime = new NodeRuntime();
 
-  constructor(private store: ProjectStore, private settings: SettingsStore) {}
+  constructor(
+    private store: ProjectStore,
+    private settings: SettingsStore,
+    private email?: EmailService,
+    private auth?: AuthService,
+  ) {}
 
   isBuilding(projectId: string): boolean {
     for (const b of this.active.values()) if (b.projectId === projectId) return true;
@@ -294,6 +302,42 @@ export class BuildOrchestrator {
     await this.finish(ctx, record, "success");
   }
 
+  /**
+   * Compose + send the "your build finished" email. Caller has already
+   * checked that `this.email` is ready and `this.auth` is wired, so this
+   * method can read straight from them. Skips silently when the user
+   * isn't signed in (race: signed out mid-build) or holds no active paid
+   * subscription. Emits a warn-level build log on send failure so the
+   * developer can spot SMTP misconfiguration from inside the app.
+   */
+  private async sendBuildSuccessEmail(ctx: ActiveBuild, record: BuildRecord): Promise<void> {
+    const user = this.auth!.currentUser();
+    if (!user?.email) return;
+
+    const summary = summarize(this.settings.get().subscription);
+    if (!summary.active) return;
+
+    // `getInternal` bypasses the per-user filter — necessary here because
+    // the orchestrator runs out-of-band from user state and we still
+    // want the email to fire even if the user signed out mid-build.
+    const project = this.store.getInternal(ctx.projectId);
+    const appName = project?.name ?? "Your app";
+
+    const result = await this.email!.sendBuildSuccess({
+      to: user.email,
+      toName: user.name,
+      appName,
+      outputPath: record.outputPath,
+      finishedAt: record.finishedAt ?? new Date().toISOString(),
+    });
+
+    if (!result.ok) {
+      this.emitLog(ctx, "warn", `Build-complete email failed: ${result.error ?? "unknown"}`);
+    } else {
+      this.emitLog(ctx, "info", `Build-complete email sent to ${user.email}`);
+    }
+  }
+
   private async finish(
     ctx: ActiveBuild,
     record: BuildRecord,
@@ -306,6 +350,21 @@ export class BuildOrchestrator {
 
     await this.store.setLastBuild(ctx.projectId, record);
     await fs.writeJson(this.store.logsPath(ctx.projectId), ctx.logs, { spaces: 2 });
+
+    // Fire-and-forget build-complete email. Gated on (1) successful build,
+    // (2) an active paid subscription — free-tier demo builds skip the
+    // mailer to avoid spam from churned users, (3) email service actually
+    // configured. All checks short-circuit silently so a missing SMTP
+    // config never breaks build cleanup.
+    if (status === "success" && this.email?.isReady() && this.auth) {
+      void this.sendBuildSuccessEmail(ctx, record).catch((err: unknown) => {
+        this.emitLog(
+          ctx,
+          "warn",
+          `Email notification skipped: ${err instanceof Error ? err.message : String(err)}`,
+        );
+      });
+    }
 
     this.emitProgress(ctx, status, STEPS.length, status === "success" ? "Build complete" : "Build ended", 100);
 

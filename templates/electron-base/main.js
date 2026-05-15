@@ -200,6 +200,14 @@ function oauthPopupOptions(parentView, title, features, _effectiveUA) {
     minimizable: false,
     maximizable: false,
     webPreferences: {
+      // Load the same preload as the main view so the JS-level Chrome
+      // fingerprint spoof (navigator.userAgentData, window.chrome.runtime,
+      // navigator.webdriver, navigator.plugins) is installed in the OAuth
+      // popup too. Without this, Google's "Couldn't sign you in / browser
+      // not secure" check fires inside the popup even when the parent
+      // window passes — the popup is a brand-new webContents with no
+      // inherited preload, and Google's JS sniff runs there.
+      preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: false,

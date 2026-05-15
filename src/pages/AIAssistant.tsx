@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import {
   Bot, Send, Sparkles, KeyRound, ExternalLink, Loader2, Check,
   AlertCircle, RefreshCw, Wand2, Palette, Globe, Hammer, Pencil, MapPin, Zap, BookOpen,
+  MessageSquare, Trash2,
 } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { GlassCard } from "@/components/ui/GlassCard";
@@ -34,6 +35,119 @@ interface ChatTurn {
   ranActions?: Record<number, "ok" | "err">;
 }
 
+/** localStorage shape for the AI Assistant's chat archive. Stores a rolling
+ *  list of conversations (newest first) + the id of the currently-active
+ *  one. Each conversation is capped at TURNS_PER_CONVERSATION to keep
+ *  individual entries small; the list as a whole is capped at
+ *  CONVERSATION_LIMIT so the archive can't grow without bound. */
+const AI_HISTORY_STORAGE_KEY = "w2a:ai-chat-history";
+const TURNS_PER_CONVERSATION = 100;
+const CONVERSATION_LIMIT = 25;
+
+interface StoredConversation {
+  id: string;
+  /** First-user-message-derived title for the sidebar list. Falls back to
+   *  "New chat" until the user sends their first message. */
+  title: string;
+  turns: ChatTurn[];
+  pinnedDraft: AIProjectDraft | null;
+  createdAt: string;
+  /** Bumped on every turn so the sidebar can sort by recency. */
+  updatedAt: string;
+}
+
+interface StoredChatArchive {
+  conversations: StoredConversation[];
+  activeId: string | null;
+}
+
+const newConversationId = () => `c${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
+function isChatTurn(t: unknown): t is ChatTurn {
+  if (typeof t !== "object" || t === null) return false;
+  const x = t as ChatTurn;
+  return (
+    typeof x.id === "string" &&
+    typeof x.text === "string" &&
+    (x.role === "user" || x.role === "assistant" || x.role === "error")
+  );
+}
+
+/** Trim leading punctuation/whitespace and clamp to a sidebar-friendly
+ *  length. Empty input falls back to the generic "New chat" label. */
+function deriveTitle(turns: ChatTurn[]): string {
+  const firstUser = turns.find((t) => t.role === "user");
+  const raw = firstUser?.text.trim().replace(/^[/.\s-]+/, "") ?? "";
+  if (!raw) return "New chat";
+  return raw.length > 60 ? `${raw.slice(0, 60).trimEnd()}…` : raw;
+}
+
+function loadStoredChatArchive(): StoredChatArchive {
+  const empty: StoredChatArchive = { conversations: [], activeId: null };
+  try {
+    const raw = localStorage.getItem(AI_HISTORY_STORAGE_KEY);
+    if (!raw) return empty;
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== "object") return empty;
+
+    // Legacy migration — v1 stored a single { turns, pinnedDraft } blob.
+    // Wrap it into a single-conversation archive so users don't lose
+    // their existing chat when this version ships.
+    if (Array.isArray(parsed.turns) && !Array.isArray(parsed.conversations)) {
+      const turns = parsed.turns.filter(isChatTurn).slice(-TURNS_PER_CONVERSATION);
+      if (turns.length === 0) return empty;
+      const now = new Date().toISOString();
+      const id = newConversationId();
+      return {
+        conversations: [{
+          id,
+          title: deriveTitle(turns),
+          turns,
+          pinnedDraft: parsed.pinnedDraft ?? null,
+          createdAt: typeof parsed.savedAt === "string" ? parsed.savedAt : now,
+          updatedAt: typeof parsed.savedAt === "string" ? parsed.savedAt : now,
+        }],
+        activeId: id,
+      };
+    }
+
+    if (!Array.isArray(parsed.conversations)) return empty;
+    const conversations: StoredConversation[] = [];
+    for (const c of parsed.conversations) {
+      if (!c || typeof c !== "object") continue;
+      if (typeof c.id !== "string" || !Array.isArray(c.turns)) continue;
+      const turns = c.turns.filter(isChatTurn).slice(-TURNS_PER_CONVERSATION);
+      conversations.push({
+        id: c.id,
+        title: typeof c.title === "string" ? c.title : deriveTitle(turns),
+        turns,
+        pinnedDraft: c.pinnedDraft ?? null,
+        createdAt: typeof c.createdAt === "string" ? c.createdAt : new Date().toISOString(),
+        updatedAt: typeof c.updatedAt === "string" ? c.updatedAt : new Date().toISOString(),
+      });
+    }
+    // Sort newest-first and clamp to the archive cap.
+    conversations.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+    const trimmed = conversations.slice(0, CONVERSATION_LIMIT);
+    const activeId = typeof parsed.activeId === "string"
+      && trimmed.some((c) => c.id === parsed.activeId)
+        ? parsed.activeId
+        : trimmed[0]?.id ?? null;
+    return { conversations: trimmed, activeId };
+  } catch {
+    return empty;
+  }
+}
+
+function persistChatArchive(archive: StoredChatArchive): void {
+  try {
+    localStorage.setItem(AI_HISTORY_STORAGE_KEY, JSON.stringify(archive));
+  } catch {
+    // Quota exceeded or storage disabled — non-fatal, the chat keeps
+    // working in-memory and we'll retry on the next write.
+  }
+}
+
 const SUGGESTIONS = [
   "Create a focused dark Notion wrapper with a tray icon and quick-capture shortcut",
   "Wrap YouTube as a distraction-free desktop player with global play/pause",
@@ -62,15 +176,125 @@ export default function AIAssistant() {
   const hasKey = Boolean(settings?.aiApiKey);
   const toast = useToast();
 
-  const [turns, setTurns] = useState<ChatTurn[]>([]);
+  // Hydrate the chat archive from localStorage on first mount. The ref
+  // reads storage once; we then split the archive into the per-render
+  // state slices we actually drive the UI from. Storing the whole
+  // archive in a single state object would re-render on every keystroke
+  // — instead, `conversations` is the canonical list and `activeId`
+  // points into it, mirrored back to storage from a single useEffect.
+  const initialArchiveRef = useRef<StoredChatArchive | null>(null);
+  if (initialArchiveRef.current === null) initialArchiveRef.current = loadStoredChatArchive();
+
+  const [conversations, setConversations] = useState<StoredConversation[]>(
+    () => initialArchiveRef.current?.conversations ?? [],
+  );
+  const [activeId, _setActiveId] = useState<string | null>(
+    () => initialArchiveRef.current?.activeId ?? null,
+  );
+  // Mirror of activeId in a ref so synchronous mutators (ensureActive →
+  // setTurns inside the same event handler) can read the just-set value
+  // without waiting for React to re-render. Without this, the setTurns
+  // wrapper would close over a stale `activeId` and silently drop turns
+  // for freshly-created conversations.
+  const activeIdRef = useRef<string | null>(initialArchiveRef.current?.activeId ?? null);
+  const setActiveId = (next: string | null) => {
+    activeIdRef.current = next;
+    _setActiveId(next);
+  };
+
+  const activeConversation = useMemo(
+    () => conversations.find((c) => c.id === activeId) ?? null,
+    [conversations, activeId],
+  );
+  const turns = activeConversation?.turns ?? [];
+  const pinnedDraft = activeConversation?.pinnedDraft ?? null;
+
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
-  const [pinnedDraft, setPinnedDraft] = useState<AIProjectDraft | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [turns.length, busy]);
+
+  // Persist the archive whenever its contents change. localStorage writes
+  // are synchronous; archive is bounded by CONVERSATION_LIMIT inside the
+  // loader so a long-running user never blows past the 5MB quota.
+  useEffect(() => {
+    persistChatArchive({ conversations, activeId });
+  }, [conversations, activeId]);
+
+  /** Mutate the active conversation. Reads activeId from the ref so a
+   *  just-set value (from ensureActiveConversation in the same tick) is
+   *  visible immediately. Bumps `updatedAt` so the sidebar re-sorts. */
+  const updateActive = (patch: (c: StoredConversation) => StoredConversation) => {
+    const id = activeIdRef.current;
+    if (!id) return;
+    setConversations((all) => all.map((c) => (c.id === id ? patch(c) : c)));
+  };
+
+  const setTurns = (next: ChatTurn[] | ((prev: ChatTurn[]) => ChatTurn[])) => {
+    // Auto-create an active conversation so a fresh user (no archive)
+    // can /list, send a prompt, etc. without a separate setup step.
+    ensureActiveConversation();
+    updateActive((c) => {
+      const resolved = typeof next === "function" ? (next as (p: ChatTurn[]) => ChatTurn[])(c.turns) : next;
+      return {
+        ...c,
+        turns: resolved,
+        title: c.title === "New chat" || !c.title ? deriveTitle(resolved) : c.title,
+        updatedAt: new Date().toISOString(),
+      };
+    });
+  };
+
+  const setPinnedDraft = (next: AIProjectDraft | null) => {
+    ensureActiveConversation();
+    updateActive((c) => ({ ...c, pinnedDraft: next, updatedAt: new Date().toISOString() }));
+  };
+
+  /** Lazily materialize an active conversation when the user first types
+   *  into a fresh archive (or after clicking "New chat"). Keeps the
+   *  archive from filling up with empty placeholder entries. Reads the
+   *  active id from the ref so multiple calls in the same event handler
+   *  (e.g. setTurns then setPinnedDraft) reuse the freshly-created entry
+   *  instead of stacking duplicates. */
+  const ensureActiveConversation = (): string => {
+    if (activeIdRef.current) return activeIdRef.current;
+    const now = new Date().toISOString();
+    const fresh: StoredConversation = {
+      id: newConversationId(),
+      title: "New chat",
+      turns: [],
+      pinnedDraft: null,
+      createdAt: now,
+      updatedAt: now,
+    };
+    setConversations((all) => [fresh, ...all].slice(0, CONVERSATION_LIMIT));
+    setActiveId(fresh.id);
+    return fresh.id;
+  };
+
+  const startNewChat = () => {
+    // If the current conversation never received a user turn, reuse it
+    // instead of stacking empty entries.
+    if (activeConversation && activeConversation.turns.length === 0) return;
+    setActiveId(null);
+  };
+
+  const switchToConversation = (id: string) => {
+    if (id === activeId) return;
+    setActiveId(id);
+    track({ name: "feature_used", props: { feature: "ai_chat_history_opened" } });
+  };
+
+  const deleteConversation = (id: string) => {
+    setConversations((all) => {
+      const next = all.filter((c) => c.id !== id);
+      if (id === activeId) setActiveId(next[0]?.id ?? null);
+      return next;
+    });
+  };
 
   /** Snapshot of state we ship to the model on every chat call. */
   const chatContext = useMemo<AIChatContext>(() => ({
@@ -103,6 +327,10 @@ export default function AIAssistant() {
       const handled = await handleSlashCommand(text);
       if (handled) return;
     }
+
+    // Materialize the conversation lazily — the first real user message
+    // is what makes a fresh placeholder worth keeping.
+    ensureActiveConversation();
 
     const userTurn: ChatTurn = { id: nextId(), role: "user", text };
     setTurns((t) => [...t, userTurn]);
@@ -140,8 +368,11 @@ export default function AIAssistant() {
     const arg = rest.join(" ").trim();
 
     if (cmd === "/reset") {
-      setTurns([]);
-      setPinnedDraft(null);
+      // /reset deletes the current conversation entirely and starts a
+      // fresh one (previously it just emptied the in-memory turns, which
+      // left a zombie conversation in the archive).
+      if (activeId) deleteConversation(activeId);
+      else startNewChat();
       toast.success("Conversation cleared");
       return true;
     }
@@ -340,8 +571,8 @@ export default function AIAssistant() {
               variant="secondary"
               size="sm"
               leftIcon={<RefreshCw size={13} />}
-              onClick={() => { setTurns([]); setPinnedDraft(null); }}
-              disabled={turns.length === 0 && !pinnedDraft}
+              onClick={startNewChat}
+              disabled={!activeConversation || activeConversation.turns.length === 0}
             >
               New chat
             </Button>
@@ -410,6 +641,28 @@ export default function AIAssistant() {
         </main>
 
         <aside className="space-y-4">
+          {conversations.length > 0 && (
+            <GlassCard className="p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="text-2xs uppercase tracking-wider text-text-secondary font-semibold">
+                  Recent chats
+                </div>
+                <span className="text-2xs text-text-muted">{conversations.length}</span>
+              </div>
+              <div className="space-y-1 max-h-72 overflow-y-auto pr-1 -mr-1">
+                {conversations.map((c) => (
+                  <RecentChatItem
+                    key={c.id}
+                    conversation={c}
+                    active={c.id === activeId}
+                    onOpen={() => switchToConversation(c.id)}
+                    onDelete={() => deleteConversation(c.id)}
+                  />
+                ))}
+              </div>
+            </GlassCard>
+          )}
+
           <GlassCard className="p-4">
             <div className="text-2xs uppercase tracking-wider text-text-secondary font-semibold mb-3">Try a prompt</div>
             <div className="space-y-1.5">
@@ -605,6 +858,83 @@ function DraftRow({ label, value }: { label: string; value: string }) {
 }
 
 /* ---------- Misc ---------- */
+
+function RecentChatItem({
+  conversation, active, onOpen, onDelete,
+}: {
+  conversation: StoredConversation;
+  active: boolean;
+  onOpen: () => void;
+  onDelete: () => void;
+}) {
+  // Delete confirmation lives in component state so a stray click can't
+  // wipe a long conversation without a second deliberate press.
+  const [confirming, setConfirming] = useState(false);
+  useEffect(() => {
+    if (!confirming) return;
+    const handle = setTimeout(() => setConfirming(false), 3000);
+    return () => clearTimeout(handle);
+  }, [confirming]);
+
+  const turnsCount = conversation.turns.length;
+  return (
+    <div
+      className={cn(
+        "group flex items-start gap-2 px-2.5 py-2 rounded-md border transition cursor-pointer",
+        active
+          ? "bg-accent-violet/10 border-accent-violet/40"
+          : "bg-transparent border-transparent hover:bg-white/[0.04] hover:border-border",
+      )}
+      onClick={onOpen}
+    >
+      <MessageSquare
+        size={12}
+        className={cn("mt-1 shrink-0", active ? "text-accent-violet" : "text-text-muted")}
+      />
+      <div className="flex-1 min-w-0">
+        <div className={cn("text-xs font-medium truncate", active ? "text-text-primary" : "text-text-primary/90")}>
+          {conversation.title}
+        </div>
+        <div className="text-2xs text-text-muted mt-0.5">
+          {turnsCount} {turnsCount === 1 ? "message" : "messages"} · {formatRelativeTime(conversation.updatedAt)}
+        </div>
+      </div>
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          if (confirming) onDelete();
+          else setConfirming(true);
+        }}
+        className={cn(
+          "shrink-0 h-6 w-6 rounded inline-flex items-center justify-center transition",
+          confirming
+            ? "bg-accent-red/15 text-accent-red"
+            : "text-text-muted opacity-0 group-hover:opacity-100 hover:bg-white/[0.06] hover:text-text-primary",
+        )}
+        title={confirming ? "Click again to confirm" : "Delete conversation"}
+      >
+        <Trash2 size={11} />
+      </button>
+    </div>
+  );
+}
+
+/** Compact "N minutes ago" / "yesterday" formatter for the recent-chats
+ *  sidebar. Falls back to the absolute date for older entries. */
+function formatRelativeTime(iso: string): string {
+  const t = Date.parse(iso);
+  if (!Number.isFinite(t)) return "";
+  const seconds = Math.max(0, Math.floor((Date.now() - t) / 1000));
+  if (seconds < 60) return "just now";
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days}d ago`;
+  return new Date(t).toLocaleDateString();
+}
 
 function Capability({ children }: { children: React.ReactNode }) {
   return (

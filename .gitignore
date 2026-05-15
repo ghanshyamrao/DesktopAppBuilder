@@ -14,6 +14,12 @@ google-oauth.json
 client_secret_*.json
 .env
 
+# SMTP credentials for build-complete emails. The committed
+# email-config.example.json is the template; the real file holds the
+# Titan/BigRock mailbox password and must never be committed or shipped
+# in a public installer (see comment in the example file).
+email-config.json
+
 # Claude Code MCP config embeds the Stripe secret key. Never commit.
 .mcp.json
 

@@ -190,8 +190,17 @@ export const PLANS: PlanDefinition[] = [
  *  we never strip access from someone who already paid. */
 const LEGACY_PAID_TIERS: BillingTier[] = ["3mo", "6mo", "12mo"];
 
+/** One lifetime build is allowed without any subscription so a new user
+ *  can produce a real .exe end-to-end and see the product work before
+ *  being asked to pay. Bumping this gives every signed-in user more free
+ *  builds; setting it to 0 disables the demo entirely. */
+export const FREE_TIER_BUILD_ALLOWANCE = 1;
+
 export function dailyBuildLimitFor(tier: BillingTier): number | null {
-  if (tier === "free") return 0;
+  // Free tier is capped by the lifetime allowance, not a per-day window —
+  // returning null routes recordBuild through the "no daily-counter math"
+  // branch and lets the lifetime check own enforcement.
+  if (tier === "free") return null;
   const plan = planByTier(tier);
   if (plan) return plan.dailyBuildLimit;
   if (LEGACY_PAID_TIERS.includes(tier)) return null;
@@ -199,7 +208,7 @@ export function dailyBuildLimitFor(tier: BillingTier): number | null {
 }
 
 export function totalBuildLimitFor(tier: BillingTier): number | null {
-  if (tier === "free") return 0;
+  if (tier === "free") return FREE_TIER_BUILD_ALLOWANCE;
   const plan = planByTier(tier);
   if (plan) return plan.totalBuildLimit;
   if (LEGACY_PAID_TIERS.includes(tier)) return null;

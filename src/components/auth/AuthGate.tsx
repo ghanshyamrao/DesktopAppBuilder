@@ -6,6 +6,7 @@ import LoginScreen from "./LoginScreen";
 import { api } from "@/lib/api";
 import type { AuthUser } from "@/types";
 import { identify, resetIdentity, track } from "@/lib/analytics";
+import { useAppStore } from "@/store/appStore";
 
 interface AuthContextValue {
   user: AuthUser;
@@ -39,6 +40,18 @@ interface Props {
 export default function AuthGate({ children }: Props) {
   const [phase, setPhase] = useState<Phase>({ kind: "boot" });
 
+  /** Pull the renderer's data for whichever user just signed in. App.tsx
+   *  also fires `refreshProjects` on mount, but App lives ABOVE AuthGate
+   *  — that initial call happens while signed out, the per-user project
+   *  store returns [], and nothing re-triggers a fetch when sign-in
+   *  later completes. This helper closes that gap. */
+  const hydrateForUser = useCallback(() => {
+    const store = useAppStore.getState();
+    void store.refreshProjects();
+    void store.loadSettings();
+    void store.loadSubscription();
+  }, []);
+
   // Boot: ask main process for first-run + auth state.
   useEffect(() => {
     let cancelled = false;
@@ -53,6 +66,11 @@ export default function AuthGate({ children }: Props) {
           setPhase({ kind: "splash" });
         } else if (status.user) {
           identify(status.user);
+          // Point the appStore at this user's notification slot before
+          // children mount — otherwise the first paint shows an empty
+          // bell, then flips to the user's history on the next tick.
+          useAppStore.getState().setUserScope(status.user.sub);
+          hydrateForUser();
           setPhase({ kind: "ready", user: status.user });
         } else {
           setPhase({ kind: "login", configured: status.configured });
@@ -84,22 +102,50 @@ export default function AuthGate({ children }: Props) {
     const status = await api.auth.status().catch(() => ({ configured: false, user: null }));
     if (status.user) {
       identify(status.user);
+      useAppStore.getState().setUserScope(status.user.sub);
+      hydrateForUser();
       setPhase({ kind: "ready", user: status.user });
     } else {
       setPhase({ kind: "login", configured: status.configured });
     }
-  }, []);
+  }, [hydrateForUser]);
 
   const onSignedIn = useCallback((user: AuthUser) => {
     identify(user);
     track({ name: "auth_signed_in", props: { method: "google" } });
+    // Load this user's notification history before children render so
+    // they see their own bell contents from the very first paint.
+    useAppStore.getState().setUserScope(user.sub);
+    // Refresh projects/settings/subscription against the new user. App.tsx
+    // fires these on mount, but App lives above AuthGate so its fetch ran
+    // BEFORE sign-in completed and returned []. Without this, dashboard
+    // shows 0 projects until the user navigates to another route.
+    hydrateForUser();
     setPhase({ kind: "ready", user });
-  }, []);
+  }, [hydrateForUser]);
 
   const signOut = useCallback(async () => {
     track({ name: "auth_signed_out" });
     await api.auth.signOut();
     resetIdentity();
+    // Wipe the previous user's projects + subscription from the Zustand
+    // store so the next person to sign in never sees a flash of the
+    // prior account's data while refreshProjects() is in flight. The
+    // main-process project store already filters by sub, but stale
+    // renderer state would still show through for a single paint.
+    useAppStore.setState({ projects: [], subscription: null });
+    // Detach notifications from the previous user's localStorage slot —
+    // `setUserScope(null)` clears in-memory state but PRESERVES each
+    // user's persisted slot (`w2a:notifications:<sub>`) so they get
+    // their full history back the next time they sign in.
+    useAppStore.getState().setUserScope(null);
+    // Chat history and wizard draft are still single-slot caches and
+    // would leak between accounts — clear them. (TODO: namespace these
+    // by user like notifications so each user keeps their own history.)
+    try {
+      localStorage.removeItem("w2a:ai-chat-history");
+      localStorage.removeItem("w2a:wizard-draft");
+    } catch { /* localStorage unavailable — non-fatal */ }
     const status = await api.auth.status().catch(() => ({ configured: false, user: null }));
     setPhase({ kind: "login", configured: status.configured });
   }, []);

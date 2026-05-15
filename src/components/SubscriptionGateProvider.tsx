@@ -129,11 +129,23 @@ export default function SubscriptionGateProvider({ children }: { children: React
       if (!sub) return true;
       if (sub.active) return true;
 
+      // Free-tier demo: when the `feature-free-build-demo` flag is on,
+      // unsubscribed users get a small lifetime allowance (set in
+      // paddleService.FREE_TIER_BUILD_ALLOWANCE) so they can produce one
+      // real build and see the product work before paying. Flipping the
+      // flag off in PostHog turns the demo off without a release. Once
+      // the allowance is used up — or the flag is off — fall through to
+      // the upgrade prompt.
+      const freeRemaining = sub.tier === "free" ? (sub.buildsRemainingTotal ?? 0) : 0;
+      if (isEnabled("freeBuildDemo") && sub.tier === "free" && freeRemaining > 0) {
+        return true;
+      }
+
       navigate({ name: "billing" });
       toast.error(
         "Pick a plan to keep building",
         sub.tier === "free"
-          ? "Building apps needs an active subscription. Choose any plan to start."
+          ? "You've used your free build. Pick any plan to keep building."
           : "Your plan has expired. Renew to keep building.",
       );
       return false;

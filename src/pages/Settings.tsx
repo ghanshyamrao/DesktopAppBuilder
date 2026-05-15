@@ -510,21 +510,29 @@ function SubscriptionSection() {
         <UsageTile
           label="Builds today"
           value={sub.dailyBuildLimit === null
-            ? `${sub.buildsUsedToday} (unlimited)`
+            ? isFree
+              ? "—"
+              : `${sub.buildsUsedToday} (unlimited)`
             : `${sub.buildsUsedToday} / ${sub.dailyBuildLimit}`}
           hint={sub.dailyBuildLimit === null
-            ? "No daily cap on your plan."
+            ? isFree
+              ? "Free tier uses the lifetime allowance — no daily counter."
+              : "No daily cap on your plan."
             : sub.buildsRemainingToday === 0
               ? "Daily limit hit — resets at midnight local time."
               : `${sub.buildsRemainingToday} more left today.`}
         />
         {sub.totalBuildLimit !== null ? (
           <UsageTile
-            label="Trial builds used"
+            label={isFree ? "Free demo builds" : "Trial builds used"}
             value={`${sub.buildsUsedTotal} / ${sub.totalBuildLimit}`}
             hint={sub.buildsRemainingTotal === 0
-              ? "Trial cap reached — upgrade to keep building."
-              : `${sub.buildsRemainingTotal} trial builds remaining.`}
+              ? isFree
+                ? "Free build used — pick a plan to keep building."
+                : "Trial cap reached — upgrade to keep building."
+              : isFree
+                ? `${sub.buildsRemainingTotal} free build${sub.buildsRemainingTotal === 1 ? "" : "s"} remaining — try the product, then subscribe.`
+                : `${sub.buildsRemainingTotal} trial builds remaining.`}
           />
         ) : (
           <UsageTile

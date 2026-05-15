@@ -58,7 +58,7 @@ function Dialog({ opts, onSettle }: { opts: PendingConfirm; onSettle: (v: boolea
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.15 }}
-      className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm flex items-center justify-center p-8"
+      className="fixed inset-0 z-[200] bg-black/70 flex items-center justify-center p-8"
       onClick={() => onSettle(false)}
       onKeyDown={(e) => {
         if (e.key === "Escape") onSettle(false);
@@ -74,7 +74,7 @@ function Dialog({ opts, onSettle }: { opts: PendingConfirm; onSettle: (v: boolea
         transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
         role="alertdialog"
         aria-modal="true"
-        className="w-full max-w-md glass-strong rounded-2xl shadow-elev overflow-hidden"
+        className="w-full max-w-md bg-bg-panel border border-border rounded-2xl shadow-elev overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-5 flex items-start gap-4">
@@ -103,8 +103,8 @@ function Dialog({ opts, onSettle }: { opts: PendingConfirm; onSettle: (v: boolea
           </button>
         </div>
 
-        <div className="px-5 py-3 border-t border-border bg-white/[0.02] flex items-center justify-end gap-2">
-          <Button size="sm" onClick={() => onSettle(false)}>
+        <div className="px-5 pb-5 pt-1 flex items-center justify-end gap-2">
+          <Button size="sm" variant="ghost" onClick={() => onSettle(false)}>
             {opts.cancelLabel ?? "Cancel"}
           </Button>
           <Button

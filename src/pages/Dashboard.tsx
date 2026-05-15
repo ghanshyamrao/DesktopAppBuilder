@@ -30,15 +30,26 @@ export default function Dashboard() {
   //
   // When the PostHog `feature-billing` flag is off, we skip the gate
   // entirely so toggling the flag truly turns billing on/off globally.
+  // Free-tier users with their lifetime demo build still available pass
+  // too — that's the whole point of letting them try the product.
   function requireSubscriptionOrRedirect(): boolean {
     if (!isEnabled("billing")) return true;
     if (subscription?.active) return true;
+    if (
+      isEnabled("freeBuildDemo") &&
+      subscription?.tier === "free" &&
+      (subscription.buildsRemainingTotal ?? 0) > 0
+    ) {
+      return true;
+    }
     navigate({ name: "billing" });
     toast.error(
       "Pick a plan to start building",
       subscription && subscription.tier !== "free"
         ? "Your plan has expired. Renew to keep going."
-        : "Building apps needs an active subscription. Choose any plan to begin."
+        : subscription?.tier === "free" && (subscription.buildsUsedTotal ?? 0) > 0
+          ? "You've used your free build. Pick a plan to keep building."
+          : "Building apps needs an active subscription. Choose any plan to begin."
     );
     return false;
   }

@@ -51,6 +51,7 @@ export class SettingsStore {
           profile: data.profile,
           appearance: { ...DEFAULTS.appearance!, ...(data.appearance ?? {}) },
           subscription: data.subscription,
+          legacyProjectsClaimedBy: data.legacyProjectsClaimedBy,
         };
       } catch {
         await fs.writeJson(this.filePath, DEFAULTS, { spaces: 2 });
@@ -82,6 +83,10 @@ export class SettingsStore {
         patch.subscription === undefined
           ? this.settings.subscription
           : { ...(this.settings.subscription ?? {} as NonNullable<GlobalSettings["subscription"]>), ...patch.subscription },
+      legacyProjectsClaimedBy:
+        patch.legacyProjectsClaimedBy === undefined
+          ? this.settings.legacyProjectsClaimedBy
+          : patch.legacyProjectsClaimedBy,
     };
     await fs.writeJson(this.filePath, this.settings, { spaces: 2 });
     return this.settings;

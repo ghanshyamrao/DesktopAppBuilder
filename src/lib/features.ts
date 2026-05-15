@@ -44,6 +44,12 @@ export const FEATURES = {
      `feature-billing-production` once you've finished sandbox testing
      and are ready to take real money from real customers. */
   billingProduction: false,
+  /* Demo build for unsubscribed (free-tier) users. Flag ON → every signed-in
+     account gets ONE lifetime build so they can produce a real .exe and see
+     the product work before paying. Flag OFF → no free build; the upgrade
+     prompt fires immediately like it did pre-launch. The lifetime cap itself
+     lives in paddleService.FREE_TIER_BUILD_ALLOWANCE. */
+  freeBuildDemo: true,
 
   /* Hidden in v1.0.0 — code is fully built and shippable, just gated.
      Flip to true when the feature is ready for general release. */
@@ -77,6 +83,7 @@ const FEATURE_FLAG_KEYS: Record<FeatureKey, string> = {
   settings:       "feature-settings",
   billing:        "feature-billing",
   billingProduction: "feature-billing-production",
+  freeBuildDemo:  "feature-free-build-demo",
   builder:        "feature-builder",
   recipes:        "feature-recipes",
   plugins:        "feature-plugins",

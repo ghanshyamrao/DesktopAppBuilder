@@ -118,6 +118,12 @@ export interface AppProject {
   url: string;
   description?: string;
   iconPath?: string;
+  /** Google `sub` of the user that owns this project. Stamped at creation
+   *  time and used by the project store to scope every list/get/update
+   *  call to the signed-in user. Projects predating this field are
+   *  considered "legacy" and get claimed on the next sign-in via the
+   *  one-time `legacyProjectsClaimedBy` migration in GlobalSettings. */
+  ownerSub?: string;
   /** Kind of project. "wrapper" (default) loads `url` in a chrome-wrapped
    *  WebContentsView. "starter" is a full Electron source project copied
    *  from a starter template — the URL field is unused (set to "app://local"
@@ -310,6 +316,11 @@ export interface GlobalSettings {
   /** Stripe-driven billing state. Persisted alongside other settings so
    *  the app knows on launch whether the user is entitled to build. */
   subscription?: SubscriptionState;
+  /** Google `sub` of the user that claimed ownership of any pre-upgrade
+   *  ownerless projects. Set exactly once — on the first sign-in after
+   *  the per-user-projects feature shipped — so subsequent users never
+   *  see another account's legacy data. */
+  legacyProjectsClaimedBy?: string;
 }
 
 export interface AppearanceSettings {

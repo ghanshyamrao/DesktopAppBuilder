@@ -862,11 +862,35 @@ export function registerIpcHandlers(deps: Deps): void {
   });
 
   // ── Auth ─────────────────────────────────────────────────────────────
+
+  /** One-time migration: stamp every pre-existing ownerless project with
+   *  the first user who signs in after the per-user-projects feature
+   *  shipped. Gated by `legacyProjectsClaimedBy` in settings so a second
+   *  account on the same machine never inherits the first user's data. */
+  async function maybeClaimLegacyProjects(sub: string): Promise<void> {
+    const settings = settingsStore.get();
+    if (settings.legacyProjectsClaimedBy) return;
+    try {
+      await projectStore.claimLegacyProjects(sub);
+    } finally {
+      // Always set the flag — even on partial success — so we don't
+      // retry on every sign-in. If something failed, projects without
+      // ownerSub remain visible to all users, which is no worse than
+      // the previous (un-scoped) behavior.
+      await settingsStore.update({ legacyProjectsClaimedBy: sub });
+    }
+  }
+
   ipcMain.handle("auth:status", async () => {
     try {
+      const user = authService.currentUser();
+      // If a user is already signed in from a prior session and the
+      // legacy migration hasn't run yet, run it now (covers app restarts
+      // where the user never re-clicks Sign In).
+      if (user) await maybeClaimLegacyProjects(user.sub);
       return ok({
         configured: authService.hasOAuthConfig(),
-        user: authService.currentUser(),
+        user,
       });
     } catch (e) {
       return fail(e);
@@ -876,6 +900,7 @@ export function registerIpcHandlers(deps: Deps): void {
   ipcMain.handle("auth:signIn", async () => {
     try {
       const user = await authService.signIn();
+      await maybeClaimLegacyProjects(user.sub);
       // After Google's browser tab finishes, pull our window back to front.
       const w = getWindow();
       if (w) {
@@ -1153,15 +1178,24 @@ export function registerIpcHandlers(deps: Deps): void {
       const sub = settings.subscription;
       const summary = summarize(sub);
 
-      // No active paid plan → no builds.
+      // No active paid plan → only the free-tier demo allowance can keep
+      // a build going. Free users get FREE_TIER_BUILD_ALLOWANCE lifetime
+      // builds (currently 1) so they can produce one real .exe and see
+      // the product work end-to-end before subscribing. Once that's used
+      // up, fall through to "no-subscription" so the renderer routes them
+      // to /billing the same way it does for any other unsubscribed user.
       if (!summary.active) {
-        return ok({
-          allowed: false,
-          reason: "no-subscription" as const,
-          used: summary.buildsUsedToday,
-          limit: summary.dailyBuildLimit,
-          remaining: summary.buildsRemainingToday,
-        });
+        const freeAllowance = summary.tier === "free" ? (summary.totalBuildLimit ?? 0) : 0;
+        const freeRemaining = summary.tier === "free" ? (summary.buildsRemainingTotal ?? 0) : 0;
+        if (summary.tier !== "free" || freeAllowance <= 0 || freeRemaining <= 0) {
+          return ok({
+            allowed: false,
+            reason: "no-subscription" as const,
+            used: summary.buildsUsedToday,
+            limit: summary.dailyBuildLimit,
+            remaining: summary.buildsRemainingToday,
+          });
+        }
       }
 
       // Trial enforces both a daily cap (typically the same as the total)

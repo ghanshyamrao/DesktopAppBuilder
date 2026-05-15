@@ -70,6 +70,10 @@ export interface AppProject {
   url: string;
   description?: string;
   iconPath?: string;
+  /** Google `sub` of the user that owns this project. Stamped by the
+   *  main-process ProjectStore at creation time and used to scope every
+   *  list/get/update call to the signed-in user. */
+  ownerSub?: string;
   /** Project kind. Defaults to "wrapper" when missing. */
   kind?: "wrapper" | "starter";
   /** Starter template id when kind="starter". */

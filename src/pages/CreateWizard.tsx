@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Button } from "@/components/ui/Button";
 import WizardStepper, { type WizardStepDef } from "@/components/WizardStepper";
@@ -11,7 +11,7 @@ import { isValidHttpUrl, platformLabel } from "@/lib/utils";
 import { track, setProjectGroup, useFeatureFlagsLoadedTick } from "@/lib/analytics";
 import { isBuildPlatformEnabled, type BuildPlatformKey } from "@/lib/features";
 import type { Platform, SecuritySettings, WindowSettings } from "@/types";
-import { AlertCircle, ChevronLeft, Loader2, ArrowRight, Sparkles } from "lucide-react";
+import { AlertCircle, ChevronLeft, Loader2, ArrowRight, Sparkles, X } from "lucide-react";
 
 const STEPS: WizardStepDef[] = [
   { id: "url", title: "Website URL", subtitle: "Source location" },
@@ -33,6 +33,64 @@ interface FormState {
   platforms: Platform[];
 }
 
+/** localStorage slot for an in-progress wizard. When a user leaves the
+ *  wizard mid-flow (clicks "All apps", switches routes, closes the app),
+ *  the most recent form snapshot is restored next time they open it.
+ *
+ *  We key by (isStarter, starterId) so a paused wrapper draft doesn't
+ *  collide with a paused starter draft. Cleared on successful submit and
+ *  via the explicit "Discard draft" button.
+ */
+const WIZARD_DRAFT_STORAGE_KEY = "w2a:wizard-draft";
+
+interface StoredWizardDraft {
+  form: FormState;
+  step: number;
+  isStarter: boolean;
+  starterId?: string;
+  /** ISO timestamp of the last write. Surfaced in the "Draft restored"
+   *  banner so the user can decide whether the half-finished form is
+   *  still relevant or should be discarded. */
+  savedAt: string;
+}
+
+function loadWizardDraft(): StoredWizardDraft | null {
+  try {
+    const raw = localStorage.getItem(WIZARD_DRAFT_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== "object") return null;
+    if (!parsed.form || typeof parsed.form !== "object") return null;
+    if (typeof parsed.step !== "number") return null;
+    return parsed as StoredWizardDraft;
+  } catch {
+    return null;
+  }
+}
+
+function persistWizardDraft(draft: StoredWizardDraft): void {
+  try { localStorage.setItem(WIZARD_DRAFT_STORAGE_KEY, JSON.stringify(draft)); }
+  catch { /* quota exceeded or storage disabled — non-fatal */ }
+}
+
+function clearWizardDraft(): void {
+  try { localStorage.removeItem(WIZARD_DRAFT_STORAGE_KEY); } catch { /* non-fatal */ }
+}
+
+/** True when the user has put SOMETHING into the form. Persisting an
+ *  untouched form would resurface an empty "Draft restored" banner on
+ *  every visit, which is just noise. */
+function hasMeaningfulInput(form: FormState): boolean {
+  return (
+    form.url.trim() !== "" ||
+    form.name.trim() !== "" ||
+    form.description.trim() !== "" ||
+    form.icon !== null ||
+    form.customCss.trim() !== "" ||
+    form.customJs.trim() !== ""
+  );
+}
+
 export default function CreateWizard() {
   const navigate = useAppStore((s) => s.navigate);
   const settings = useAppStore((s) => s.settings);
@@ -47,41 +105,121 @@ export default function CreateWizard() {
   const starterId = route.name === "wizard" ? route.starterId : undefined;
   const isStarter = !!starterId;
 
+  // Resolve the persisted wizard draft once at mount. An AI-supplied
+  // `aiDraft` always wins (the AI Assistant just routed the user here
+  // with a fresh proposal — that proposal trumps a stale local draft).
+  // We also require the draft to match the current flow (starter vs
+  // wrapper, and same starterId) so a paused wrapper doesn't leak into
+  // a freshly-clicked starter template.
+  const restoredDraftRef = useRef<StoredWizardDraft | null>(null);
+  if (restoredDraftRef.current === null) {
+    const stored = !aiDraft ? loadWizardDraft() : null;
+    if (
+      stored &&
+      stored.isStarter === isStarter &&
+      stored.starterId === starterId
+    ) {
+      restoredDraftRef.current = stored;
+    }
+  }
+  const restored = restoredDraftRef.current;
+
+  // Banner state — shown when we restored from storage so the user knows
+  // why their fields are pre-filled and can dismiss/discard.
+  const [draftBannerOpen, setDraftBannerOpen] = useState(restored !== null);
+
   // Step 0 is "Website URL" — irrelevant for starter projects, so we open
-  // the wizard at step 1 (App Details) when starterId is set.
-  const [step, setStep] = useState(isStarter ? 1 : 0);
+  // the wizard at step 1 (App Details) when starterId is set. A restored
+  // draft overrides this so the user lands back on the step they left.
+  const [step, setStep] = useState(() => {
+    if (restored) return restored.step;
+    return isStarter ? 1 : 0;
+  });
 
   useEffect(() => {
-    track({ name: "wizard_started", props: { starter_id: starterId } });
+    track({
+      name: "wizard_started",
+      props: { starter_id: starterId, resumed: restored !== null },
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [form, setForm] = useState<FormState>(() => ({
-    url: aiDraft?.url ?? "",
-    name: aiDraft?.name ?? "",
-    description: aiDraft?.description ?? "",
-    icon: null,
-    window: {
-      width: aiDraft?.window?.width ?? 1280,
-      height: aiDraft?.window?.height ?? 800,
-      resizable: aiDraft?.window?.resizable ?? true,
-      fullscreen: aiDraft?.window?.fullscreen ?? false,
-      centerOnLaunch: aiDraft?.window?.centerOnLaunch ?? true,
-      rememberState: aiDraft?.window?.rememberState ?? true,
-    },
-    security: {
-      contextIsolation: aiDraft?.security?.contextIsolation ?? true,
-      nodeIntegration: aiDraft?.security?.nodeIntegration ?? false,
-      disableContextMenu: aiDraft?.security?.disableContextMenu ?? false,
-      enableDevToolsInProduction: aiDraft?.security?.enableDevToolsInProduction ?? false,
-      customUserAgent: aiDraft?.security?.customUserAgent ?? "",
-    },
-    customCss: aiDraft?.customCss ?? "",
-    customJs: aiDraft?.customJs ?? "",
-    platforms: detectDefaultPlatforms(),
-  }));
+  const [form, setForm] = useState<FormState>(() => {
+    if (restored) return restored.form;
+    return {
+      url: aiDraft?.url ?? "",
+      name: aiDraft?.name ?? "",
+      description: aiDraft?.description ?? "",
+      icon: null,
+      window: {
+        width: aiDraft?.window?.width ?? 1280,
+        height: aiDraft?.window?.height ?? 800,
+        resizable: aiDraft?.window?.resizable ?? true,
+        fullscreen: aiDraft?.window?.fullscreen ?? false,
+        centerOnLaunch: aiDraft?.window?.centerOnLaunch ?? true,
+        rememberState: aiDraft?.window?.rememberState ?? true,
+      },
+      security: {
+        contextIsolation: aiDraft?.security?.contextIsolation ?? true,
+        nodeIntegration: aiDraft?.security?.nodeIntegration ?? false,
+        disableContextMenu: aiDraft?.security?.disableContextMenu ?? false,
+        enableDevToolsInProduction: aiDraft?.security?.enableDevToolsInProduction ?? false,
+        customUserAgent: aiDraft?.security?.customUserAgent ?? "",
+      },
+      customCss: aiDraft?.customCss ?? "",
+      customJs: aiDraft?.customJs ?? "",
+      platforms: detectDefaultPlatforms(),
+    };
+  });
+
+  // Persist the in-progress form whenever something changes. Skipped for
+  // an entirely-empty form so visiting the wizard doesn't overwrite a
+  // real draft with a no-op snapshot.
+  useEffect(() => {
+    if (!hasMeaningfulInput(form)) return;
+    persistWizardDraft({
+      form,
+      step,
+      isStarter,
+      starterId,
+      savedAt: new Date().toISOString(),
+    });
+  }, [form, step, isStarter, starterId]);
+
+  const discardDraft = () => {
+    clearWizardDraft();
+    setDraftBannerOpen(false);
+    restoredDraftRef.current = null;
+    // Reset to a fresh form so the user actually sees the "discard" take
+    // effect (otherwise the banner closes but the prefilled fields stay).
+    setStep(isStarter ? 1 : 0);
+    setForm({
+      url: "",
+      name: "",
+      description: "",
+      icon: null,
+      window: {
+        width: settings?.defaultWindow.width ?? 1280,
+        height: settings?.defaultWindow.height ?? 800,
+        resizable: settings?.defaultWindow.resizable ?? true,
+        fullscreen: settings?.defaultWindow.fullscreen ?? false,
+        centerOnLaunch: settings?.defaultWindow.centerOnLaunch ?? true,
+        rememberState: settings?.defaultWindow.rememberState ?? true,
+      },
+      security: {
+        contextIsolation: settings?.defaultSecurity.contextIsolation ?? true,
+        nodeIntegration: settings?.defaultSecurity.nodeIntegration ?? false,
+        disableContextMenu: settings?.defaultSecurity.disableContextMenu ?? false,
+        enableDevToolsInProduction: settings?.defaultSecurity.enableDevToolsInProduction ?? false,
+        customUserAgent: settings?.defaultSecurity.customUserAgent ?? "",
+      },
+      customCss: "",
+      customJs: "",
+      platforms: detectDefaultPlatforms(),
+    });
+  };
 
   // hydrate defaults from settings once available
   useEffect(() => {
@@ -156,6 +294,10 @@ export default function CreateWizard() {
         },
       });
       track({ name: "wizard_completed", props: { project_id: project.id } });
+      // Project is created — drop the in-progress draft so the wizard
+      // opens blank next time. Done before the build kicks off so a
+      // build-step failure doesn't leave a stale draft lying around.
+      clearWizardDraft();
       await api.builds.start(project.id);
       navigate({ name: "build", projectId: project.id });
     } catch (e) {
@@ -182,6 +324,33 @@ export default function CreateWizard() {
           ? "Configure your starter project — name, icon, window. Build to .exe or export the source folder."
           : "Five quick steps. Web URL in, native installer out."}
       />
+
+      {draftBannerOpen && restored && (
+        <div className="mx-8 mb-5 flex items-start gap-3 px-4 py-3 rounded-lg bg-accent-blue/10 border border-accent-blue/30 text-sm">
+          <Sparkles size={14} className="shrink-0 mt-0.5 text-accent-blue" />
+          <div className="flex-1 min-w-0">
+            <div className="font-medium text-text-primary">Draft restored</div>
+            <div className="text-xs text-text-secondary mt-0.5">
+              Picked up where you left off — last saved {formatRelativeTime(restored.savedAt)}.
+              Continue editing, or discard the draft to start fresh.
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setDraftBannerOpen(false)}
+            className="text-xs text-text-secondary hover:text-text-primary transition px-2 py-1 rounded"
+          >
+            Keep
+          </button>
+          <button
+            type="button"
+            onClick={discardDraft}
+            className="text-xs text-accent-red hover:text-accent-red/80 transition px-2 py-1 rounded inline-flex items-center gap-1"
+          >
+            <X size={12} /> Discard
+          </button>
+        </div>
+      )}
 
       <div className="px-8 grid gap-6" style={{ gridTemplateColumns: "260px minmax(0, 1fr)" }}>
         <div className="sticky top-4 self-start">
@@ -226,6 +395,22 @@ export default function CreateWizard() {
       </div>
     </div>
   );
+}
+
+/** Compact human-readable delta for the draft-restored banner. Falls back
+ *  to the absolute timestamp when the saved date is unparseable. */
+function formatRelativeTime(iso: string): string {
+  const t = Date.parse(iso);
+  if (!Number.isFinite(t)) return iso;
+  const seconds = Math.max(0, Math.floor((Date.now() - t) / 1000));
+  if (seconds < 60) return "just now";
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes} minute${minutes === 1 ? "" : "s"} ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} hour${hours === 1 ? "" : "s"} ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days} day${days === 1 ? "" : "s"} ago`;
+  return new Date(t).toLocaleDateString();
 }
 
 function detectDefaultPlatforms(): Platform[] {
