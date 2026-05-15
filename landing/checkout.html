@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Complete your purchase — WebToDesktop Builder</title>
+<meta name="robots" content="noindex" />
+<link rel="icon" type="image/png" href="logo.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<!-- Paddle.js v2 — required to render the inline checkout overlay
+     against the transaction id Paddle appends as ?_ptxn=. The
+     client-side token below is a public token (safe to expose in the
+     browser). -->
+<script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
+<style>
+  :root {
+    --bg:            #0b0b0f;
+    --surface:       rgba(22, 23, 30, 0.85);
+    --border:        rgba(255, 255, 255, 0.08);
+    --text:          #f5f5f7;
+    --text-mut:      rgba(245, 245, 247, 0.62);
+    --accent:        #6366f1;
+    --accent-2:      #a855f7;
+    --error:         #f87171;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    min-height: 100vh;
+    background: radial-gradient(1200px 600px at 50% -10%, rgba(99,102,241,0.18), transparent 70%),
+                radial-gradient(900px 500px at 50% 100%, rgba(168,85,247,0.12), transparent 70%),
+                var(--bg);
+    color: var(--text);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 40px;
+    max-width: 520px;
+    width: 100%;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    text-align: center;
+  }
+  h1 { font-size: 22px; font-weight: 700; margin: 0 0 8px; }
+  p { color: var(--text-mut); line-height: 1.6; margin: 0 0 16px; font-size: 14.5px; }
+  .spinner {
+    width: 18px; height: 18px;
+    border: 2px solid rgba(255,255,255,0.12);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    display: inline-block;
+    vertical-align: -4px;
+    margin-right: 10px;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .err {
+    color: var(--error);
+    background: rgba(248,113,113,0.08);
+    border: 1px solid rgba(248,113,113,0.2);
+    padding: 14px 16px;
+    border-radius: 10px;
+    text-align: left;
+    font-size: 14px;
+    margin-top: 20px;
+  }
+  .txn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text-mut);
+    background: rgba(255,255,255,0.04);
+    padding: 6px 10px;
+    border-radius: 6px;
+    display: inline-block;
+    margin-top: 12px;
+    word-break: break-all;
+  }
+  .checkout-container {
+    margin-top: 16px;
+    /* Paddle.js renders into this when displayMode is "inline".
+       Overlay mode (the default we use) ignores it but it doesn't hurt
+       to have. */
+    min-height: 0;
+  }
+</style>
+</head>
+<body>
+  <div class="card" id="card">
+    <h1 id="title">Loading checkout</h1>
+    <p id="status"><span class="spinner"></span>Connecting to Paddle…</p>
+    <div class="checkout-container" id="paddle-checkout"></div>
+    <div class="txn" id="txnDisplay" style="display:none;"></div>
+  </div>
+
+<script>
+  // Paddle Inline Checkout flow:
+  //   1. Read ?_ptxn=<txn_id> that Paddle appended when redirecting
+  //      from the seller's Default Payment Link.
+  //   2. Initialize Paddle.js with our client-side token.
+  //   3. Open the checkout overlay against the existing transaction.
+  //   4. On `checkout.completed`, hop the user back into the desktop
+  //      app via the registered web2desktop:// protocol handler.
+  //   5. The desktop main process intercepts the deep link, calls
+  //      paddleService.verifyAndApplySession({ sessionId }), and
+  //      flips the local entitlement.
+  (function () {
+    const PADDLE_CLIENT_TOKEN = 'live_e7995f5d9f8be15aae2cdf6ceeb';
+
+    const card = document.getElementById('card');
+    const title = document.getElementById('title');
+    const status = document.getElementById('status');
+    const txnDisplay = document.getElementById('txnDisplay');
+
+    const params = new URLSearchParams(window.location.search);
+    const txnId = params.get('_ptxn');
+
+    function showError(msg) {
+      title.textContent = 'Checkout error';
+      status.innerHTML = '<div class="err">' + msg + '</div>';
+    }
+
+    if (!txnId) {
+      showError('No transaction ID was provided in the redirect. Please return to WebToDesktop Builder and click <strong>Subscribe</strong> again.');
+      return;
+    }
+
+    txnDisplay.textContent = txnId;
+    txnDisplay.style.display = 'inline-block';
+
+    if (typeof Paddle === 'undefined') {
+      showError('Paddle.js failed to load. Check your internet connection and refresh the page.');
+      return;
+    }
+
+    try {
+      Paddle.Initialize({
+        token: PADDLE_CLIENT_TOKEN,
+        eventCallback: function (data) {
+          if (!data || !data.name) return;
+          if (data.name === 'checkout.completed') {
+            // Payment confirmed by Paddle. Redirect into the desktop
+            // app — the deep-link handler in main.ts will verify the
+            // transaction with Paddle's API and persist the entitlement.
+            title.textContent = 'Payment received';
+            status.innerHTML = '<span class="spinner"></span>Returning to WebToDesktop Builder…';
+            const deepLink = 'web2desktop://billing-success?_ptxn=' + encodeURIComponent(txnId);
+            // Brief delay so the success state is visible before the
+            // protocol prompt fires.
+            setTimeout(function () { window.location.href = deepLink; }, 600);
+          } else if (data.name === 'checkout.error') {
+            const errMsg = (data.error && data.error.detail) || 'Something went wrong during checkout.';
+            showError(errMsg);
+          } else if (data.name === 'checkout.closed') {
+            // User dismissed the checkout overlay without paying.
+            title.textContent = 'Checkout cancelled';
+            status.innerHTML = 'No charge was made. <a href="javascript:location.reload()" style="color:var(--accent);">Reopen checkout</a> or return to the app.';
+          }
+        },
+      });
+
+      // Open the checkout for the existing draft transaction. Paddle
+      // hydrates the overlay with the line items (price, customer,
+      // tax, etc.) from the transaction we created server-side.
+      Paddle.Checkout.open({
+        transactionId: txnId,
+        settings: {
+          displayMode: 'overlay',
+          theme: 'dark',
+          locale: 'en',
+        },
+      });
+
+      title.textContent = 'Complete your purchase';
+      status.innerHTML = 'Use the secure Paddle checkout that just opened to enter your payment details.';
+    } catch (e) {
+      showError('Failed to open checkout: ' + (e && e.message ? e.message : String(e)));
+    }
+  })();
+</script>
+</body>
+</html>
