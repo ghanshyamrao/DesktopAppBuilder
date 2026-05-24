@@ -156,6 +156,24 @@ export function registerIpcHandlers(deps: Deps): void {
     }
   });
 
+  ipcMain.handle("builds:runApp", async (_e, projectId: string) => {
+    try {
+      await orchestrator.runApp(projectId);
+      return ok(undefined);
+    } catch (e) {
+      return fail(e);
+    }
+  });
+
+  ipcMain.handle("builds:installApp", async (_e, projectId: string) => {
+    try {
+      await orchestrator.installApp(projectId);
+      return ok(undefined);
+    } catch (e) {
+      return fail(e);
+    }
+  });
+
   ipcMain.handle("builds:export", async (_e, projectId: string, destDir?: string) => {
     try {
       let target = destDir;

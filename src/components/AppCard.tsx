@@ -1,6 +1,6 @@
 import {
   Check, Clock, Loader2, Monitor, Smartphone, LayoutGrid as DashboardIcon,
-  XCircle, Zap, Play, FolderOpen, Download, Trash2,
+  XCircle, Zap, Play, FolderOpen, Download, Trash2, Rocket, PackageOpen,
 } from "lucide-react";
 import type { AppProject } from "@/types";
 import { cn, platformLabel, timeAgo } from "@/lib/utils";
@@ -11,6 +11,7 @@ import { useProjectIcon } from "@/lib/useProjectIcon";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { ActionMenu } from "@/components/ui/ActionMenu";
 import { useConfirm } from "@/components/ui/Confirm";
+import { useToast } from "@/components/ui/Toast";
 
 const PLACEHOLDER_ICONS: Record<string, JSX.Element> = {
   zap: <Zap size={20} />,
@@ -33,6 +34,7 @@ export default function AppCard({ project }: Props) {
   const navigate = useAppStore((s) => s.navigate);
   const deleteProject = useAppStore((s) => s.deleteProject);
   const confirm = useConfirm();
+  const toast = useToast();
 
   const status = project.lastBuild?.status;
   const isBuilding = status === "building";
@@ -47,6 +49,15 @@ export default function AppCard({ project }: Props) {
   const billingEnabled = isEnabled("billing");
   const canRevealOutput = hasOutput && (!billingEnabled || hasFeature("reveal-output"));
   const canExportBuild = hasOutput;
+  // Run / Install: two gates layered.
+  //   1. PostHog kill-switch `feature-run-install` — operators flip this
+  //      off to hide the actions globally without a release.
+  //   2. Tier gate — paid users on Monthly OR Lifetime get access via the
+  //      `run-install` feature key. Trial / free users still go through
+  //      Export. Skipped when the `feature-billing` flag is off so the
+  //      paywall doesn't apply in flag-off builds.
+  const canRunOrInstall =
+    hasOutput && isEnabled("runInstall") && (!billingEnabled || hasFeature("run-install"));
 
   const onClick = () =>
     isBuilding
@@ -94,6 +105,46 @@ export default function AppCard({ project }: Props) {
                 label: "Open / Rebuild",
                 onSelect: () => navigate({ name: "build", projectId: project.id }),
               },
+              // Run / Install operate on the build artifacts the user just
+              // produced — same gate as Export. "Run" launches the unpacked
+              // .exe (no install needed). "Install" hands the installer file
+              // to the OS so the user can install in-place from the
+              // dashboard without going to the export folder first.
+              ...(canRunOrInstall ? [
+                {
+                  key: "run",
+                  icon: <Rocket size={13} />,
+                  label: "Run",
+                  onSelect: async () => {
+                    // Single toast that transitions in place — spinner +
+                    // shimmer line on click, then the same toast flips to
+                    // success / error when shell.openPath returns.
+                    const t = toast.loading(`Launching ${project.name}…`, "Starting the built app without installing.");
+                    try {
+                      const res = await window.w2a.builds.runApp(project.id);
+                      if (!res.ok) t.error("Couldn't run app", res.error ?? "Unknown error");
+                      else t.success(`${project.name} launched`, "Look for the new window to open shortly.");
+                    } catch (e) {
+                      t.error("Couldn't run app", e instanceof Error ? e.message : String(e));
+                    }
+                  },
+                },
+                {
+                  key: "install",
+                  icon: <PackageOpen size={13} />,
+                  label: "Install",
+                  onSelect: async () => {
+                    const t = toast.loading(`Opening installer for ${project.name}…`, "The OS installer will guide you through setup.");
+                    try {
+                      const res = await window.w2a.builds.installApp(project.id);
+                      if (!res.ok) t.error("Couldn't open installer", res.error ?? "Unknown error");
+                      else t.success("Installer opened", "Follow the on-screen prompts to install the app.");
+                    } catch (e) {
+                      t.error("Couldn't open installer", e instanceof Error ? e.message : String(e));
+                    }
+                  },
+                },
+              ] : []),
               // Reveal Output / Export visibility is gated by the
               // `feature-billing` PostHog flag (see hooks above). With
               // billing OFF, both actions appear for every user. With

@@ -246,7 +246,8 @@ export type GatedFeatureKey =
   | "priority-support"
   | "theme-switch"
   | "notifications"
-  | "reveal-output";
+  | "reveal-output"
+  | "run-install";
 
 export interface BillingPlan {
   tier: BillingTier;
@@ -347,6 +348,8 @@ export interface W2AApi {
     start: (projectId: string) => Promise<IpcResult<{ buildId: string }>>;
     cancel: (buildId: string) => Promise<IpcResult<void>>;
     revealOutput: (projectId: string) => Promise<IpcResult<void>>;
+    runApp: (projectId: string) => Promise<IpcResult<void>>;
+    installApp: (projectId: string) => Promise<IpcResult<void>>;
     getLogs: (projectId: string) => Promise<IpcResult<BuildLogEvent[]>>;
     export: (
       projectId: string,

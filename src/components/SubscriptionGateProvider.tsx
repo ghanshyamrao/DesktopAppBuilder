@@ -3,6 +3,7 @@ import { useAppStore } from "@/store/appStore";
 import { useToast } from "@/components/ui/Toast";
 import { api, setSubscriptionGate, clearSubscriptionGate, setFeatureGate, clearFeatureGate, setOnBuildBlocked, clearOnBuildBlocked } from "@/lib/api";
 import { isEnabled } from "@/lib/features";
+import { isAdmin } from "@/lib/featureAccess";
 import { useFeatureFlagsLoadedTick } from "@/lib/analytics";
 import BillingSuccessModal from "@/components/BillingSuccessModal";
 import type { GatedFeatureKey, SubscriptionSummary } from "@/types";
@@ -21,6 +22,7 @@ const FEATURE_LABEL: Record<GatedFeatureKey, string> = {
   "theme-switch":     "Theme switching",
   "notifications":    "Notifications",
   "reveal-output":    "Reveal output",
+  "run-install":      "Run / Install from dashboard",
 };
 
 /** Minimum tier that unlocks each feature — surfaced in the upgrade toast
@@ -37,6 +39,7 @@ const MIN_TIER_FOR_FEATURE: Record<GatedFeatureKey, string> = {
   "code-signing":     "Monthly",
   "theme-switch":     "Monthly",
   "notifications":    "Monthly",
+  "run-install":      "Monthly",
   "reveal-output":    "Lifetime",
   "priority-support": "Lifetime",
 };
@@ -123,6 +126,11 @@ export default function SubscriptionGateProvider({ children }: { children: React
       return () => clearSubscriptionGate();
     }
     setSubscriptionGate(async () => {
+      // Admin override (PostHog `feature-admin-override`) — short-circuit
+      // every billing check so admins can exercise paid-only flows without
+      // an active plan. Has no effect on other users — `feature-billing`
+      // and `feature-billing-production` still apply globally.
+      if (isAdmin()) return true;
       const sub = useAppStore.getState().subscription;
       // Still loading — let the user through rather than blocking on a
       // network hop. Real payment enforcement re-checks on the next click.
@@ -156,6 +164,10 @@ export default function SubscriptionGateProvider({ children }: { children: React
     // include the key, the gate redirects to /billing and toasts the
     // minimum tier that unlocks the feature.
     setFeatureGate((key) => {
+      // Admin override — bypass per-feature tier checks the same way
+      // it bypasses subscriptionGate above. Admin sees every feature
+      // unlocked regardless of which plan they're nominally on.
+      if (isAdmin()) return true;
       const sub = useAppStore.getState().subscription;
       // Loading or no subscription → block & redirect.
       if (!sub || !sub.active) {

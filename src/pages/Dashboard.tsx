@@ -32,7 +32,10 @@ export default function Dashboard() {
   // entirely so toggling the flag truly turns billing on/off globally.
   // Free-tier users with their lifetime demo build still available pass
   // too — that's the whole point of letting them try the product.
+  // Admin users (PostHog `feature-admin-override`) bypass entirely so
+  // they can dogfood paid flows without holding an active plan.
   function requireSubscriptionOrRedirect(): boolean {
+    if (isEnabled("adminOverride")) return true;
     if (!isEnabled("billing")) return true;
     if (subscription?.active) return true;
     if (

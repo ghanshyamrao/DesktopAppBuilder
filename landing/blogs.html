@@ -1,0 +1,409 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TooDesktop Blog - Website to Desktop App Guides</title>
+<meta name="description" content="Guides on turning websites into desktop apps: URL wrapping, Electron release checklists, native UX, tray actions, and shipping Windows installers with TooDesktop." />
+<meta name="robots" content="index, follow, max-image-preview:large" />
+<meta name="keywords" content="website to desktop app guide, Electron release checklist, native desktop UX, TooDesktop blog, wrap web app" />
+<link rel="canonical" href="https://toodesktop.com/blogs.html" />
+<link rel="sitemap" type="application/xml" title="Sitemap" href="https://toodesktop.com/sitemap.xml" />
+<meta property="og:locale" content="en_US" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="TooDesktop" />
+<meta property="og:title" content="TooDesktop Blog — Website to Desktop App Guides" />
+<meta property="og:description" content="Practical guides for wrapping websites into desktop apps and shipping polished Electron installers." />
+<meta property="og:url" content="https://toodesktop.com/blogs.html" />
+<meta property="og:image" content="https://toodesktop.com/logo.png" />
+<meta property="og:image:alt" content="TooDesktop blog" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="TooDesktop Blog" />
+<meta name="twitter:description" content="How to convert websites to desktop apps, ship Electron installers, and polish native UX." />
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Blog",
+      "name": "TooDesktop Blog",
+      "url": "https://toodesktop.com/blogs.html",
+      "description": "Guides about converting websites into desktop apps and shipping Electron installers.",
+      "publisher": { "@type": "Organization", "name": "TooDesktop", "url": "https://toodesktop.com/" },
+      "blogPost": [
+        {
+          "@type": "BlogPosting",
+          "headline": "How to turn a website into a desktop app",
+          "url": "https://toodesktop.com/blogs.html#web-to-desktop",
+          "datePublished": "2026-05-19",
+          "author": { "@type": "Person", "name": "Ghanshyam Rao" },
+          "description": "Wrap a web app with the right shell, permissions, naming, and native affordances."
+        },
+        {
+          "@type": "BlogPosting",
+          "headline": "A simple Electron release checklist",
+          "url": "https://toodesktop.com/blogs.html#electron-release",
+          "datePublished": "2026-05-19",
+          "author": { "@type": "Person", "name": "Ghanshyam Rao" },
+          "description": "Verify version, icons, installer metadata, code signing, and download links before you ship."
+        },
+        {
+          "@type": "BlogPosting",
+          "headline": "Make your wrapped app feel native",
+          "url": "https://toodesktop.com/blogs.html#native-feel",
+          "datePublished": "2026-05-19",
+          "author": { "@type": "Person", "name": "Ghanshyam Rao" },
+          "description": "Shortcuts, tray actions, window chrome, and loading states that feel at home on desktop."
+        }
+      ]
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://toodesktop.com/" },
+        { "@type": "ListItem", "position": 2, "name": "Blog", "item": "https://toodesktop.com/blogs.html" }
+      ]
+    }
+  ]
+}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="icon" type="image/png" href="logo.png" />
+<style>
+  :root,
+  [data-theme="dark"] {
+    --bg: #0b0b0f;
+    --surface: rgba(22, 23, 30, 0.62);
+    --border: rgba(255, 255, 255, 0.08);
+    --border-strong: rgba(255, 255, 255, 0.16);
+    --text: #f5f5f7;
+    --text-mut: rgba(245, 245, 247, 0.64);
+    --text-dim: rgba(245, 245, 247, 0.42);
+    --accent-blue: #5b9dff;
+    --accent-violet: #a78bfa;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Inter", -apple-system, "Segoe UI", system-ui, sans-serif;
+    font-size: 15px; line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent-blue); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+  .wrap-narrow { max-width: 880px; margin: 0 auto; padding: 0 24px; }
+  .mesh {
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background:
+      radial-gradient(60% 40% at 10% -10%, rgba(167,139,250,0.18) 0%, transparent 60%),
+      radial-gradient(45% 35% at 100% 0%, rgba(34,211,238,0.10) 0%, transparent 60%),
+      radial-gradient(50% 45% at 50% 110%, rgba(91,157,255,0.12) 0%, transparent 60%);
+  }
+  .nav {
+    position: sticky; top: 0; z-index: 50;
+    backdrop-filter: blur(14px);
+    background: rgba(11, 11, 15, 0.72);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 64px; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 15px; color: var(--text); }
+  .brand:hover, .nav-back:hover { text-decoration: none; }
+  .brand-mark { width: 26px; height: 26px; border-radius: 7px; }
+  .nav-back { font-size: 14px; color: var(--text-mut); }
+  .nav-actions { display: flex; align-items: center; gap: 14px; }
+  .download-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    height: 38px; padding: 0 14px;
+    border-radius: 10px;
+    background: linear-gradient(180deg, var(--accent-blue), #3d7be0);
+    color: white; font-size: 13px; font-weight: 750;
+  }
+  .download-btn:hover { text-decoration: none; filter: brightness(1.08); }
+  main { position: relative; z-index: 1; }
+  .hero { padding: 92px 0 42px; text-align: center; }
+  .eyebrow {
+    display: inline-block;
+    font-size: 12px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--accent-violet);
+    padding: 6px 12px; border: 1px solid rgba(167, 139, 250, 0.3); border-radius: 999px;
+    margin-bottom: 18px;
+  }
+  h1 {
+    font-size: clamp(36px, 6vw, 58px);
+    font-weight: 800; letter-spacing: -0.025em; line-height: 1.05;
+    margin-bottom: 16px;
+    background: linear-gradient(135deg, #f5f5f7 0%, #a78bfa 100%);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .lede { color: var(--text-mut); font-size: 18px; max-width: 680px; margin: 0 auto; }
+  .blog-shell { padding: 28px 0 96px; }
+  .featured-post {
+    display: grid;
+    grid-template-columns: 0.95fr 1.2fr;
+    gap: 0;
+    min-height: 360px;
+    margin-bottom: 22px;
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    border-radius: 18px;
+    overflow: hidden;
+    backdrop-filter: blur(18px);
+    box-shadow: 0 28px 80px -28px rgba(0, 0, 0, 0.72);
+  }
+  .featured-art {
+    min-height: 320px;
+    background:
+      linear-gradient(135deg, rgba(91,157,255,0.92), rgba(167,139,250,0.86)),
+      radial-gradient(circle at 20% 20%, rgba(255,255,255,0.22), transparent 34%);
+    display: grid;
+    place-items: center;
+    padding: 36px;
+  }
+  .featured-window {
+    width: min(310px, 100%);
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.28);
+    background: rgba(8, 10, 18, 0.58);
+    box-shadow: 0 22px 60px -18px rgba(0,0,0,0.55);
+    overflow: hidden;
+  }
+  .featured-bar { height: 34px; display: flex; align-items: center; gap: 7px; padding: 0 12px; border-bottom: 1px solid rgba(255,255,255,0.16); }
+  .featured-dot { width: 9px; height: 9px; border-radius: 50%; background: rgba(255,255,255,0.8); }
+  .featured-lines { padding: 24px; display: grid; gap: 12px; }
+  .featured-lines span { height: 12px; border-radius: 999px; background: rgba(255,255,255,0.2); }
+  .featured-lines span:nth-child(1) { width: 76%; height: 18px; background: rgba(255,255,255,0.42); }
+  .featured-lines span:nth-child(2) { width: 92%; }
+  .featured-lines span:nth-child(3) { width: 64%; }
+  .featured-copy { padding: 38px; display: flex; flex-direction: column; justify-content: center; }
+  .post-kicker { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 14px; }
+  .tag {
+    display: inline-flex; align-items: center;
+    min-height: 26px; padding: 0 10px;
+    border-radius: 999px;
+    background: rgba(91, 157, 255, 0.13);
+    border: 1px solid rgba(91, 157, 255, 0.24);
+    color: #9ec5ff;
+    font-size: 11px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+  }
+  .date { color: var(--text-dim); font-size: 13px; }
+  .featured-copy h2 { font-size: clamp(30px, 4vw, 46px); line-height: 1.05; letter-spacing: -0.028em; margin-bottom: 16px; }
+  .featured-copy p { color: var(--text-mut); font-size: 16px; line-height: 1.65; margin-bottom: 22px; }
+  .read-link {
+    display: inline-flex; align-items: center; gap: 8px;
+    color: var(--text); font-size: 14px; font-weight: 750;
+  }
+  .read-link:hover { text-decoration: none; color: #9ec5ff; }
+  .posts-head {
+    display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between;
+    gap: 18px;
+    margin: 46px 0 18px;
+  }
+  .posts-head h2 { font-size: 28px; letter-spacing: -0.02em; line-height: 1.1; }
+  .topic-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .topic {
+    color: var(--text-mut);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 7px 11px;
+    font-size: 13px;
+    background: rgba(255,255,255,0.03);
+  }
+  .posts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .post {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    backdrop-filter: blur(16px);
+    display: flex;
+    min-height: 330px;
+    flex-direction: column;
+    transition: transform 180ms, border-color 180ms, box-shadow 180ms;
+  }
+  .post:hover { transform: translateY(-3px); border-color: var(--border-strong); box-shadow: 0 18px 50px -28px rgba(91,157,255,0.8); }
+  .post h3 { font-size: 22px; line-height: 1.15; letter-spacing: -0.018em; margin: 10px 0 12px; }
+  .post p { color: var(--text-mut); margin-bottom: 14px; }
+  .post ul { color: var(--text-mut); margin: 0 0 20px 20px; }
+  .post li { margin-bottom: 8px; }
+  .post .read-link { margin-top: auto; }
+  .blog-cta {
+    margin-top: 22px;
+    padding: 28px;
+    border-radius: 18px;
+    border: 1px solid var(--border);
+    background: linear-gradient(135deg, rgba(91,157,255,0.14), rgba(167,139,250,0.12));
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+    gap: 18px;
+  }
+  .blog-cta h2 { font-size: 24px; letter-spacing: -0.018em; margin-bottom: 6px; }
+  .blog-cta p { color: var(--text-mut); }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    height: 40px; padding: 0 16px;
+    border-radius: 10px;
+    background: linear-gradient(180deg, var(--accent-blue), #3d7be0);
+    color: white; font-size: 14px; font-weight: 750;
+  }
+  .btn:hover { text-decoration: none; filter: brightness(1.08); }
+  @media (max-width: 920px) {
+    .featured-post { grid-template-columns: 1fr; }
+    .posts { grid-template-columns: 1fr; }
+  }
+  footer.bottom {
+    border-top: 1px solid var(--border);
+    background: rgba(11, 11, 15, 0.6);
+    padding: 36px 0;
+    position: relative; z-index: 1;
+  }
+  .foot-row {
+    display: flex; flex-wrap: wrap; gap: 16px;
+    align-items: center; justify-content: space-between;
+    color: var(--text-dim); font-size: 13.5px;
+  }
+  .foot-links { display: flex; flex-wrap: wrap; gap: 18px; }
+  .foot-links a { color: var(--text-mut); }
+  .foot-links a:hover { color: var(--text); text-decoration: none; }
+</style>
+</head>
+<body>
+<div class="mesh"></div>
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a href="index.html" class="brand">
+      <img src="logo.png" alt="TooDesktop" class="brand-mark" />
+      <span>TooDesktop</span>
+    </a>
+    <div class="nav-actions">
+      <a href="index.html" class="nav-back">Back to home</a>
+    </div>
+  </div>
+</nav>
+
+<main>
+  <section class="hero">
+    <div class="wrap-narrow">
+      <span class="eyebrow">Blogs</span>
+      <h1>Notes for shipping desktop apps faster.</h1>
+      <p class="lede">Short, practical articles for teams turning web products into installable desktop experiences.</p>
+    </div>
+  </section>
+
+  <section class="blog-shell wrap">
+    <article class="featured-post" id="web-to-desktop">
+      <div class="featured-art" aria-hidden="true">
+        <div class="featured-window">
+          <div class="featured-bar">
+            <span class="featured-dot"></span>
+            <span class="featured-dot"></span>
+            <span class="featured-dot"></span>
+          </div>
+          <div class="featured-lines">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+        </div>
+      </div>
+      <div class="featured-copy">
+        <div class="post-kicker">
+          <span class="tag">Featured guide</span>
+          <span class="date">May 19, 2026 - 5 min read</span>
+        </div>
+        <h2>How to turn a website into a desktop app</h2>
+        <p>A good desktop wrapper starts with a stable web app URL, clear authentication behavior, and a loading state that does not feel like a browser tab. Before packaging, make sure your app works well at desktop sizes and can recover gracefully when the network drops.</p>
+        <a class="read-link" href="#web-to-desktop">Read the guide <span>-></span></a>
+      </div>
+    </article>
+
+    <div class="posts-head">
+      <div>
+        <span class="eyebrow">Latest articles</span>
+        <h2>Practical notes for desktop app makers</h2>
+      </div>
+      <div class="topic-row" aria-label="Blog topics">
+        <span class="topic">Packaging</span>
+        <span class="topic">Electron</span>
+        <span class="topic">Native UX</span>
+        <span class="topic">Releases</span>
+      </div>
+    </div>
+
+    <div class="posts">
+      <article class="post">
+        <div class="post-kicker">
+          <span class="tag">Guide</span>
+          <span class="date">5 min read</span>
+        </div>
+        <h3>How to turn a website into a desktop app</h3>
+        <p>Turn a web product into an installable desktop experience with the right shell, permissions, naming, and native affordances.</p>
+        <ul>
+          <li>Use a focused app window instead of browser-style navigation.</li>
+          <li>Pick an icon, app name, and installer name users will recognize.</li>
+          <li>Add only the native actions your users actually need.</li>
+        </ul>
+        <a class="read-link" href="#web-to-desktop">Read more <span>-></span></a>
+      </article>
+
+      <article class="post" id="electron-release">
+        <div class="post-kicker">
+          <span class="tag">Release</span>
+          <span class="date">4 min read</span>
+        </div>
+        <h3>A simple Electron release checklist</h3>
+        <p>Before shipping, verify the app version, icon sizes, installer metadata, code signing settings, and download destination.</p>
+        <ul>
+          <li>Build a test installer before announcing the release.</li>
+          <li>Install it on a fresh machine or clean user profile.</li>
+          <li>Keep release notes short, specific, and user-facing.</li>
+        </ul>
+        <a class="read-link" href="#electron-release">Read more <span>-></span></a>
+      </article>
+
+      <article class="post" id="native-feel">
+        <div class="post-kicker">
+          <span class="tag">Design</span>
+          <span class="date">6 min read</span>
+        </div>
+        <h3>Make your wrapped app feel native</h3>
+        <p>Users notice small desktop details quickly. Keyboard shortcuts, tray actions, window chrome, and startup behavior all matter.</p>
+        <ul>
+          <li>Map common actions to familiar keyboard shortcuts.</li>
+          <li>Use tray and menu actions only when they make workflows faster.</li>
+          <li>Design empty, loading, and error states for desktop sessions.</li>
+        </ul>
+        <a class="read-link" href="#native-feel">Read more <span>-></span></a>
+      </article>
+    </div>
+
+    <div class="blog-cta">
+      <div>
+        <h2>Have a web app ready for desktop?</h2>
+        <p>Open TooDesktop and turn it into a polished installable app.</p>
+      </div>
+      <a class="btn" href="https://github.com/ghanshyamrao/DesktopAppBuilder/releases/download/1.0.0/WebToDesktop.Builder.Setup.1.0.0.exe" download>Download for Windows</a>
+    </div>
+  </section>
+</main>
+
+<footer class="bottom">
+  <div class="wrap foot-row">
+    <div>© 2026 TooDesktop. Developed by Ghanshyam Rao.</div>
+    <div class="foot-links">
+      <a href="index.html">Home</a>
+      <a href="about.html">About</a>
+      <a href="https://github.com/ghanshyamrao/DesktopAppBuilder/releases/download/1.0.0/WebToDesktop.Builder.Setup.1.0.0.exe" download>Download for Windows</a>
+      <a href="terms.html">Terms</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="refund.html">Refund</a>
+    </div>
+  </div>
+</footer>
+</body>
+</html>

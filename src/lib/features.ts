@@ -50,6 +50,19 @@ export const FEATURES = {
      prompt fires immediately like it did pre-launch. The lifetime cap itself
      lives in paddleService.FREE_TIER_BUILD_ALLOWANCE. */
   freeBuildDemo: true,
+  /* Run / Install actions on the project card's "..." menu. Lets paid users
+     launch the unpacked .exe or open the installer directly from the
+     dashboard without going through the export flow. Kill-switch only —
+     tier-based access (Monthly + Lifetime) is enforced separately by the
+     `run-install` GatedFeatureKey wired through paddleService. */
+  runInstall: true,
+  /* Admin override. When the signed-in user matches the PostHog flag's
+     release condition (email allow-list), every subscription / feature
+     gate in the renderer short-circuits to "allowed". Static default is
+     `false` so the SDK failing or running offline never grants admin —
+     access can ONLY be granted via PostHog. Has no effect on the
+     kill-switch flags themselves; those still apply globally. */
+  adminOverride: false,
 
   /* Hidden in v1.0.0 — code is fully built and shippable, just gated.
      Flip to true when the feature is ready for general release. */
@@ -84,6 +97,8 @@ const FEATURE_FLAG_KEYS: Record<FeatureKey, string> = {
   billing:        "feature-billing",
   billingProduction: "feature-billing-production",
   freeBuildDemo:  "feature-free-build-demo",
+  runInstall:     "feature-run-install",
+  adminOverride:  "feature-admin-override",
   builder:        "feature-builder",
   recipes:        "feature-recipes",
   plugins:        "feature-plugins",

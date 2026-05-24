@@ -3,15 +3,143 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>TooDesktop — Wrap any website into a real desktop app</title>
-<meta name="description" content="Visual builder for native Electron desktop apps. Pick a template, tune the theme, hit build — get a signed-ready installer for Windows, macOS, and Linux." />
+<meta name="referrer" content="strict-origin-when-cross-origin" />
+<title>TooDesktop | Convert Websites to Desktop Apps — No Electron Code</title>
+<meta name="description" content="TooDesktop is a visual website-to-desktop app builder. Wrap any URL into a native Electron app for Windows, macOS, and Linux. Download the Windows installer free, or start a 14-day trial." />
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+<meta name="keywords" content="website to desktop app, web to desktop app, convert website to desktop app, Electron app builder, desktop app builder, wrap website as app, PWA to desktop, TooDesktop, WebToDesktop" />
+<meta name="author" content="Ghanshyam Rao" />
+<meta name="theme-color" content="#0b0b0f" />
+<link rel="canonical" href="https://toodesktop.com/" />
+<link rel="sitemap" type="application/xml" title="Sitemap" href="https://toodesktop.com/sitemap.xml" />
+<link rel="manifest" href="site.webmanifest" />
+<meta property="og:locale" content="en_US" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="TooDesktop" />
+<meta property="og:title" content="TooDesktop | Convert Websites to Desktop Apps" />
+<meta property="og:description" content="Visual builder to turn any website into a native Electron desktop app. Templates, themes, tray actions, and cross-platform installers." />
+<meta property="og:url" content="https://toodesktop.com/" />
+<meta property="og:image" content="https://toodesktop.com/logo.png" />
+<meta property="og:image:alt" content="TooDesktop logo — web to desktop app builder" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="TooDesktop | Convert Websites to Desktop Apps" />
+<meta name="twitter:description" content="Turn any website into a native Electron desktop app for Windows, macOS, and Linux — without writing Electron code." />
+<meta name="twitter:image" content="https://toodesktop.com/logo.png" />
+<meta name="twitter:image:alt" content="TooDesktop logo" />
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://toodesktop.com/#organization",
+      "name": "TooDesktop",
+      "url": "https://toodesktop.com/",
+      "logo": "https://toodesktop.com/logo.png",
+      "founder": { "@type": "Person", "name": "Ghanshyam Rao" },
+      "email": "ghanshyamrao108@gmail.com",
+      "sameAs": ["https://github.com/ghanshyamrao/DesktopAppBuilder"]
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://toodesktop.com/#website",
+      "url": "https://toodesktop.com/",
+      "name": "TooDesktop",
+      "description": "Visual website-to-desktop app builder for Windows, macOS, and Linux.",
+      "publisher": { "@id": "https://toodesktop.com/#organization" },
+      "inLanguage": "en-US"
+    },
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://toodesktop.com/#software",
+      "name": "TooDesktop",
+      "alternateName": "WebToDesktop Builder",
+      "url": "https://toodesktop.com/",
+      "applicationCategory": "DeveloperApplication",
+      "operatingSystem": "Windows 10+, macOS, Linux",
+      "softwareVersion": "1.0.0",
+      "downloadUrl": "https://github.com/ghanshyamrao/DesktopAppBuilder/releases/download/1.0.0/WebToDesktop.Builder.Setup.1.0.0.exe",
+      "installUrl": "https://github.com/ghanshyamrao/DesktopAppBuilder/releases/download/1.0.0/WebToDesktop.Builder.Setup.1.0.0.exe",
+      "image": "https://toodesktop.com/logo.png",
+      "description": "TooDesktop converts websites into native Electron desktop apps with a visual builder, templates, themes, native actions, and installers.",
+      "publisher": { "@id": "https://toodesktop.com/#organization" },
+      "featureList": [
+        "Visual Electron app builder",
+        "Wrap any website URL",
+        "Windows, macOS, and Linux installers",
+        "Themes, tray actions, and native shortcuts",
+        "No hand-written Electron boilerplate required"
+      ],
+      "offers": [
+        { "@type": "Offer", "price": "10", "priceCurrency": "USD", "description": "Monthly subscription" },
+        { "@type": "Offer", "price": "100", "priceCurrency": "USD", "description": "Lifetime license" }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://toodesktop.com/#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Who is TooDesktop for?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "If you have a web app and want to give users a real desktop install — tray icon, native window controls, OS shortcuts — TooDesktop is built for you. No prior Electron experience required."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What does the free trial include?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "14 days of access with up to 3 builds total — enough to wrap a site, tune the theme, and ship a real installer. Includes App Studio, cross-platform installers, and the Action Builder."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How is this different from raw Electron?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Electron is the runtime. TooDesktop is the visual builder on top: it wires preload bridges, packages installers, handles code-signing config, and gives you a theme and action graph."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What does Lifetime actually mean?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "You pay $100 once and receive every TooDesktop update we ship. No subscription renews."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "I already use electron-builder. Can I migrate?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. Import an existing project and TooDesktop reads your electron-builder.yml. Your config stays as-is; the visual editor makes it easier to maintain."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Do you collect data from my apps or builds?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No app telemetry by default. Your projects, source code, and build outputs never leave your machine."
+          }
+        }
+      ]
+    }
+  ]
+}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+<noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" /></noscript>
 <link rel="icon" type="image/png" href="logo.png" />
 <!-- Google Identity Services — real OAuth, not a demo prompt.
      Required for the "Continue with Google" button below. -->
-<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://accounts.google.com/gsi/client" defer></script>
 <style>
   /* ════════════════════════════════════════════════════════════════
      THEME TOKENS — match the desktop app's blue/violet glass aesthetic
@@ -56,15 +184,25 @@
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scroll-behavior: smooth; }
+  html {
+    scroll-behavior: smooth;
+    overflow-x: clip;
+    max-width: 100%;
+  }
   body {
     background: var(--bg);
     color: var(--text);
     font-family: "Inter", -apple-system, "Segoe UI", system-ui, sans-serif;
     font-size: 15px; line-height: 1.55;
     -webkit-font-smoothing: antialiased;
-    overflow-x: hidden;
+    overflow-x: clip;
+    max-width: 100%;
     transition: background 240ms, color 240ms;
+  }
+  main#main-content {
+    width: 100%;
+    max-width: 100%;
+    /* Do not set overflow here — it breaks position:sticky (wizard + nav effects) */
   }
   a { color: inherit; text-decoration: none; }
   button { font: inherit; cursor: pointer; }
@@ -188,37 +326,123 @@
   .reveal { opacity: 0; transform: translateY(12px); transition: opacity 600ms, transform 600ms; }
   .reveal.in { opacity: 1; transform: none; }
 
-  /* ─────────── Nav ─────────── */
+  /* ─────────── Nav — full width at top, compact glass pill on scroll ─────────── */
   nav.top {
     position: sticky; top: 0; z-index: 50;
-    background: color-mix(in srgb, var(--bg) 80%, transparent);
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
-    border-bottom: 1px solid transparent;
-    transition: border-color 200ms, background 200ms;
+    padding: 0 24px;
+    background: transparent;
+    border: none;
+    transition: padding 380ms cubic-bezier(0.16, 1, 0.3, 1);
   }
-  nav.top.scrolled { border-bottom-color: var(--border); }
-  nav.top .row {
-    display: flex; align-items: center; justify-content: space-between;
-    height: 68px; gap: 24px;
+  nav.top.scrolled {
+    padding: 8px 20px 10px;
+  }
+  .nav-float {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    transition: max-width 380ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  nav.top.scrolled .nav-float {
+    max-width: 920px;
+  }
+  .nav-glass {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    min-height: 68px;
+    padding: 0 8px 0 12px;
+    border-radius: 0;
+    background: transparent;
+    border: 1px solid transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    box-shadow: none;
+    transition:
+      min-height 380ms cubic-bezier(0.16, 1, 0.3, 1),
+      padding 380ms cubic-bezier(0.16, 1, 0.3, 1),
+      border-radius 380ms cubic-bezier(0.16, 1, 0.3, 1),
+      background 380ms cubic-bezier(0.16, 1, 0.3, 1),
+      border-color 380ms cubic-bezier(0.16, 1, 0.3, 1),
+      box-shadow 380ms cubic-bezier(0.16, 1, 0.3, 1),
+      backdrop-filter 380ms cubic-bezier(0.16, 1, 0.3, 1),
+      gap 380ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  nav.top.scrolled .nav-glass {
+    min-height: 50px;
+    padding: 4px 10px 4px 14px;
+    border-radius: 999px;
+    background: rgba(22, 23, 30, 0.78);
+    border-color: rgba(255, 255, 255, 0.14);
+    backdrop-filter: blur(32px) saturate(1.5);
+    -webkit-backdrop-filter: blur(32px) saturate(1.5);
+    box-shadow:
+      0 20px 50px -16px rgba(0, 0, 0, 0.55),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1),
+      0 0 48px -10px rgba(91, 157, 255, 0.35);
+    gap: 12px;
+  }
+  [data-theme="light"] nav.top.scrolled .nav-glass {
+    background: rgba(255, 255, 255, 0.82);
+    border-color: rgba(10, 10, 12, 0.1);
+    box-shadow:
+      0 20px 50px -20px rgba(20, 20, 40, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.95),
+      0 0 0 1px rgba(10, 10, 12, 0.06),
+      0 0 40px -12px rgba(91, 157, 255, 0.2);
   }
   .brand {
     display: flex; align-items: center; gap: 10px;
     font-weight: 700; font-size: 16px; letter-spacing: -0.015em;
     color: var(--text);
+    flex-shrink: 0;
+    transition: font-size 380ms cubic-bezier(0.16, 1, 0.3, 1), gap 380ms;
   }
+  nav.top.scrolled .brand { font-size: 14px; gap: 8px; }
   .brand-mark {
     width: 30px; height: 30px; border-radius: 8px; object-fit: cover;
     box-shadow: 0 4px 12px -4px rgba(91,157,255,0.4);
+    transition: width 380ms, height 380ms, border-radius 380ms;
   }
-  .nav-center { display: flex; align-items: center; gap: 28px; }
+  nav.top.scrolled .brand-mark {
+    width: 26px; height: 26px; border-radius: 7px;
+  }
+  .nav-center {
+    display: flex; align-items: center; justify-content: center;
+    gap: 28px; flex: 1;
+  }
+  nav.top.scrolled .nav-center { gap: 18px; }
   .nav-center a {
     font-size: 14px; color: var(--text-mut); font-weight: 500;
-    transition: color 120ms;
+    transition: color 120ms, font-size 380ms;
+    white-space: nowrap;
   }
+  nav.top.scrolled .nav-center a { font-size: 13px; }
   .nav-center a:hover { color: var(--text); }
-  .nav-right { display: flex; align-items: center; gap: 8px; }
-  @media (max-width: 880px) { .nav-center { display: none; } }
+  .nav-right {
+    display: flex; align-items: center; gap: 8px;
+    flex-shrink: 0;
+  }
+  nav.top.scrolled .nav-right { gap: 6px; }
+  nav.top.scrolled .btn-sm { height: 34px; padding: 0 14px; font-size: 12px; }
+  nav.top.scrolled .theme-toggle { width: 34px; height: 34px; border-radius: 999px; }
+  nav.top.scrolled .user-chip { padding: 3px 10px 3px 3px; font-size: 12px; }
+  nav.top.scrolled .user-chip-avatar { width: 26px; height: 26px; font-size: 11px; }
+  @media (max-width: 880px) {
+    .nav-center { display: none; }
+    nav.top { padding-left: 16px; padding-right: 16px; }
+    nav.top.scrolled { padding: 8px 16px 10px; }
+    nav.top.scrolled .nav-float { max-width: 100%; }
+    nav.top.scrolled .nav-glass { border-radius: 20px; }
+    .nav-glass { min-height: 60px; padding: 0 6px 0 10px; }
+    nav.top.scrolled .nav-glass { min-height: 48px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    nav.top, .nav-float, .nav-glass, .brand, .brand-mark, .nav-center a {
+      transition-duration: 0.01ms !important;
+    }
+  }
 
   /* Theme toggle button */
   .theme-toggle {
@@ -262,51 +486,110 @@
   /* ─────────── 1. HERO ─────────── */
   section.hero {
     padding: 120px 0 100px;
-    position: relative; overflow: hidden;
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
     text-align: center;
-  }
-  /* Each orb gently "breathes" so the background feels alive even when
-     scroll isn't happening, then drifts on parallax as the user scrolls. */
-  section.hero .orb-1 {
-    top: -160px; left: -120px; width: 520px; height: 520px;
-    transform: translateY(calc(var(--scroll-y, 0) * 0.18px));
-    animation: orbDriftA 14s ease-in-out infinite;
-  }
-  section.hero .orb-2 {
-    top: 60px; right: -140px; width: 460px; height: 460px;
-    transform: translateY(calc(var(--scroll-y, 0) * 0.14px));
-    animation: orbDriftB 16s ease-in-out infinite;
-  }
-  section.hero .orb-3 {
-    bottom: -120px; left: 35%; width: 360px; height: 360px; opacity: 0.32;
-    transform: translateY(calc(var(--scroll-y, 0) * 0.1px));
-    animation: orbDriftC 18s ease-in-out infinite;
-  }
-  @keyframes orbDriftA {
-    0%, 100% { transform: translate(0, calc(var(--scroll-y, 0) * 0.18px)) scale(1); }
-    50%      { transform: translate(30px, calc(var(--scroll-y, 0) * 0.18px - 20px)) scale(1.08); }
-  }
-  @keyframes orbDriftB {
-    0%, 100% { transform: translate(0, calc(var(--scroll-y, 0) * 0.14px)) scale(1); }
-    50%      { transform: translate(-25px, calc(var(--scroll-y, 0) * 0.14px + 25px)) scale(1.1); }
-  }
-  @keyframes orbDriftC {
-    0%, 100% { transform: translate(0, calc(var(--scroll-y, 0) * 0.1px)) scale(1); opacity: 0.32; }
-    50%      { transform: translate(40px, calc(var(--scroll-y, 0) * 0.1px - 30px)) scale(1.05); opacity: 0.42; }
+    isolation: isolate;
   }
 
-  /* Staggered entrance — each child of .hero-inner fades up in turn. */
+  /* Motion background — lightweight (GPU-friendly, no blur filters on animating layers) */
+  .hero-motion {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    width: 100%;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  section.hero > .wrap {
+    position: relative;
+    z-index: 5;
+  }
+  .hero-motion-glow {
+    position: absolute;
+    inset: -15%;
+    background:
+      radial-gradient(ellipse 55% 48% at 18% 32%, rgba(91, 157, 255, 0.38) 0%, transparent 58%),
+      radial-gradient(ellipse 50% 42% at 82% 28%, rgba(167, 139, 250, 0.32) 0%, transparent 58%),
+      radial-gradient(ellipse 48% 44% at 52% 82%, rgba(34, 211, 238, 0.22) 0%, transparent 58%);
+    animation: heroGlowDrift 24s ease-in-out infinite;
+    transform: translate3d(0, 0, 0);
+  }
+  .hero-motion.is-paused .hero-motion-glow {
+    animation-play-state: paused;
+  }
+  [data-theme="light"] .hero-motion-glow { opacity: 0.85; }
+  section.hero .orb-1 {
+    top: -120px; left: -90px; width: 400px; height: 400px;
+  }
+  section.hero .orb-2 {
+    top: 48px; right: -100px; width: 360px; height: 360px;
+  }
+  section.hero .orb-3 {
+    bottom: -90px; left: 34%; width: 280px; height: 280px; opacity: 0.38;
+  }
+  @keyframes heroGlowDrift {
+    0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+    50% { transform: translate3d(2%, -1.5%, 0) scale(1.04); }
+  }
+
+  /* Hero + nav responsive — prevent overflow & white edge gaps */
+  @media (max-width: 1024px) {
+    .nav-center { gap: 18px; }
+    .nav-center a { font-size: 13px; }
+  }
+  @media (max-width: 768px) {
+    section.hero { padding: 96px 0 72px; }
+    section.hero .h-display { font-size: clamp(32px, 8vw, 44px); }
+    section.hero .lede { font-size: 16px; margin-bottom: 32px; padding: 0 4px; }
+    .hero-ctas { flex-direction: column; align-items: stretch; padding: 0 8px; }
+    .hero-ctas .btn { width: 100%; max-width: 340px; margin: 0 auto; }
+    .hero-meta { flex-direction: column; gap: 10px; align-items: center; }
+    .hero-motion-glow { animation: none; }
+    section.hero .orb-1 { width: 280px; height: 280px; }
+    section.hero .orb-2 { width: 240px; height: 240px; }
+    section.hero .orb-3 { width: 200px; height: 200px; }
+    .wrap { padding: 0 16px; }
+    .wrap-narrow { padding: 0 16px; }
+  }
+  @media (max-width: 480px) {
+    section.hero { padding: 80px 0 64px; }
+    .hero-pill { font-size: 12px; margin-bottom: 24px; }
+    nav.top .auth-buttons .btn-ghost { display: none; }
+    nav.top.scrolled { padding: 8px 12px 10px; }
+    nav.top { padding: 0 12px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-motion-glow,
+    .hero-inner,
+    .hero-inner > * {
+      animation: none !important;
+    }
+    .hero-inner > * {
+      opacity: 1 !important;
+      transform: none !important;
+    }
+  }
+
+  /* Staggered entrance — runs once on load (no infinite content motion) */
+  .hero-inner {
+    width: 100%;
+    max-width: 100%;
+    padding: 0 4px;
+  }
   .hero-inner > * {
-    opacity: 0;
-    transform: translateY(16px);
-    animation: heroIn 800ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation: heroIn 800ms cubic-bezier(0.16, 1, 0.3, 1) both;
   }
   .hero-inner > *:nth-child(1) { animation-delay: 80ms; }
   .hero-inner > *:nth-child(2) { animation-delay: 200ms; }
   .hero-inner > *:nth-child(3) { animation-delay: 320ms; }
   .hero-inner > *:nth-child(4) { animation-delay: 440ms; }
-  .hero-inner > *:nth-child(5) { animation-delay: 560ms; }
+  .hero-inner > *:nth-child(5) { animation-delay: 680ms; }
   @keyframes heroIn {
+    from { opacity: 0; transform: translateY(16px); }
     to { opacity: 1; transform: none; }
   }
 
@@ -326,6 +609,150 @@
   section.hero .h-display { margin: 0 auto 24px; max-width: 920px; position: relative; }
   section.hero .lede { max-width: 620px; margin: 0 auto 40px; font-size: 18px; }
 
+  /* Demo reel */
+  section.demo-reel { padding: 100px 0 110px; position: relative; overflow: hidden; width: 100%; max-width: 100%; }
+  section.demo-reel .section-head {
+    display: flex; align-items: end; justify-content: space-between;
+    gap: 24px; margin-bottom: 32px;
+  }
+  section.demo-reel .section-head .lede { max-width: 560px; margin-top: 12px; }
+  .music-toggle {
+    display: inline-flex; align-items: center; gap: 8px;
+    height: 40px; padding: 0 14px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface-input);
+    color: var(--text-mut);
+    font-size: 13px; font-weight: 700;
+    transition: color 160ms, border-color 160ms, background 160ms;
+  }
+  .music-toggle:hover,
+  .music-toggle.playing {
+    color: var(--text);
+    border-color: var(--border-strong);
+    background: var(--surface);
+  }
+  .floating-music {
+    position: fixed;
+    right: 22px;
+    bottom: 22px;
+    z-index: 80;
+    box-shadow: var(--shadow-elev);
+  }
+  @media (max-width: 640px) {
+    .floating-music { right: 14px; bottom: 14px; }
+    .floating-music span { display: none; }
+  }
+  .demo-grid {
+    display: grid; gap: 18px;
+    grid-template-columns: 1.25fr 0.9fr 0.9fr;
+    align-items: stretch;
+  }
+  @media (max-width: 960px) {
+    section.demo-reel .section-head { align-items: start; flex-direction: column; }
+    .demo-grid { grid-template-columns: 1fr; }
+  }
+  .demo-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    backdrop-filter: blur(14px);
+    box-shadow: var(--shadow-elev);
+  }
+  .demo-card.featured { grid-row: span 2; }
+  .demo-video-frame {
+    position: relative;
+    aspect-ratio: 16 / 10;
+    background: #050507;
+    overflow: hidden;
+  }
+  .demo-card.featured .demo-video-frame { aspect-ratio: 16 / 13; }
+  .demo-video-frame iframe {
+    width: 100%; height: 100%;
+    border: 0;
+    display: block;
+  }
+  .demo-poster-frame {
+    cursor: pointer;
+    border: 0;
+    padding: 0;
+    width: 100%;
+    font: inherit;
+    color: inherit;
+    background: #050507;
+  }
+  .demo-poster-frame img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .demo-play-icon {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background: rgba(5, 5, 7, 0.35);
+    color: white;
+    transition: background 160ms;
+  }
+  .demo-poster-frame:hover .demo-play-icon { background: rgba(5, 5, 7, 0.5); }
+  .demo-play-icon svg { filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.45)); }
+  .demo-video-frame::after {
+    content: "";
+    position: absolute; inset: 0;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08);
+    pointer-events: none;
+  }
+  .demo-caption { padding: 18px 20px 20px; }
+  .demo-caption h3 { font-size: 18px; font-weight: 750; letter-spacing: -0.01em; margin-bottom: 7px; }
+  .demo-caption p { color: var(--text-mut); font-size: 14px; line-height: 1.55; }
+  .demo-caption a { color: var(--accent-blue); font-weight: 600; }
+  .demo-caption a:hover { text-decoration: underline; }
+  .video-modal {
+    position: fixed; inset: 0; z-index: 90;
+    display: none; align-items: center; justify-content: center;
+    padding: 24px;
+    background: rgba(0, 0, 0, 0.72);
+    backdrop-filter: blur(14px);
+  }
+  .video-modal.open { display: flex; }
+  .video-modal-card {
+    width: min(960px, 100%);
+    background: var(--surface-2);
+    border: 1px solid var(--border-strong);
+    border-radius: 16px;
+    box-shadow: var(--shadow-elev);
+    overflow: hidden;
+  }
+  .video-modal-head {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; padding: 12px 14px 12px 18px;
+    border-bottom: 1px solid var(--border);
+  }
+  .video-modal-title { font-size: 14px; font-weight: 700; color: var(--text); }
+  .video-modal-close {
+    width: 34px; height: 34px; border-radius: 9px;
+    display: grid; place-items: center;
+    border: 1px solid var(--border);
+    background: var(--surface-input);
+    color: var(--text-mut);
+  }
+  .video-modal-close:hover { color: var(--text); border-color: var(--border-strong); }
+  .video-modal-body {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: #050507;
+  }
+  .video-modal-body iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+
   /* CTAs and meta are now block-level rows that always sit on their
      own line — no more inline-wrapping into a single row. */
   .hero-ctas {
@@ -343,18 +770,36 @@
 
   /* ─────────── 2. SCROLL-PINNED WIZARD ─────────── */
   section.wizard {
-    position: relative; min-height: 500vh;
+    position: relative;
+    min-height: 500vh;
     background: var(--bg);
+    width: 100%;
+    max-width: 100%;
+    overflow: visible;
+  }
+  .wizard-bg {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 0;
   }
   section.wizard .orb-w1 { top: 15%; left: -8%; width: 480px; height: 480px; }
   section.wizard .orb-w2 { top: 55%; right: -8%; width: 440px; height: 440px; }
   .wizard-sticky {
-    position: sticky; top: 0;
+    position: -webkit-sticky;
+    position: sticky;
+    top: 0;
+    z-index: 2;
     height: 100vh;
-    display: grid; grid-template-columns: 1fr 1fr;
-    align-items: center; gap: 60px;
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: 60px;
     padding: 0 60px;
     overflow: hidden;
+    visibility: visible;
   }
   @media (max-width: 980px) {
     .wizard-sticky { grid-template-columns: 1fr; padding: 40px 24px; gap: 30px; }
@@ -563,7 +1008,7 @@
   .s4-pill .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent-green); }
 
   /* ─────────── 3. WALL ─────────── */
-  section.wall { padding: 110px 0; text-align: center; position: relative; }
+  section.wall { padding: 110px 0; text-align: center; position: relative; overflow-x: hidden; width: 100%; }
   section.wall .h-section { max-width: 760px; margin: 0 auto 18px; }
   section.wall .lede { max-width: 600px; margin: 0 auto 60px; }
   .wall-grid {
@@ -594,7 +1039,7 @@
   }
 
   /* ─────────── 4. WHY ─────────── */
-  section.why { padding: 110px 0; position: relative; }
+  section.why { padding: 110px 0; position: relative; overflow-x: hidden; width: 100%; }
   .why-intro { text-align: center; margin-bottom: 60px; }
   .why-intro .h-section { max-width: 760px; margin: 0 auto 18px; }
   .why-intro .lede { max-width: 620px; margin: 0 auto; }
@@ -628,7 +1073,7 @@
   .why-card p { font-size: 14.5px; color: var(--text-mut); line-height: 1.6; }
 
   /* ─────────── 5. PRICING ─────────── */
-  section.pricing { padding: 110px 0; text-align: center; position: relative; }
+  section.pricing { padding: 110px 0; text-align: center; position: relative; overflow-x: hidden; width: 100%; }
   section.pricing .h-section { max-width: 720px; margin: 0 auto 18px; }
   section.pricing .lede { max-width: 620px; margin: 0 auto 50px; }
   .price-grid {
@@ -690,7 +1135,53 @@
   }
 
   /* ─────────── 6. FAQ ─────────── */
-  section.faq { padding: 110px 0; position: relative; }
+  /* Blog preview */
+  section.blogs { padding: 110px 0; position: relative; overflow-x: hidden; width: 100%; }
+  section.blogs .section-head {
+    display: flex; align-items: end; justify-content: space-between;
+    gap: 24px; margin-bottom: 34px;
+  }
+  section.blogs .section-head .lede { max-width: 560px; margin-top: 12px; }
+  .blog-grid {
+    display: grid; gap: 18px;
+    grid-template-columns: repeat(3, 1fr);
+  }
+  @media (max-width: 880px) {
+    section.blogs .section-head { align-items: start; flex-direction: column; }
+    .blog-grid { grid-template-columns: 1fr; }
+  }
+  .blog-card {
+    padding: 24px;
+    min-height: 260px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    backdrop-filter: blur(12px);
+    display: flex; flex-direction: column;
+    transition: transform 200ms, border-color 200ms, box-shadow 200ms;
+  }
+  .blog-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--border-strong);
+    box-shadow: var(--shadow-glow);
+  }
+  .blog-tag {
+    align-self: flex-start;
+    padding: 4px 9px;
+    border-radius: 999px;
+    background: rgba(91, 157, 255, 0.12);
+    color: var(--accent-blue);
+    font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+    margin-bottom: 18px;
+  }
+  .blog-card h3 {
+    font-size: 21px; font-weight: 750; letter-spacing: -0.015em;
+    line-height: 1.18; margin-bottom: 12px;
+  }
+  .blog-card p { color: var(--text-mut); line-height: 1.6; font-size: 14.5px; }
+  .blog-meta { margin-top: auto; padding-top: 24px; color: var(--text-dim); font-size: 13px; }
+
+  section.faq { padding: 110px 0; position: relative; overflow-x: hidden; width: 100%; }
   section.faq .h-section { text-align: center; margin-bottom: 50px; }
   .faq-list { max-width: 760px; margin: 0 auto; }
   .faq-item { border-bottom: 1px solid var(--border); padding: 4px 0; }
@@ -937,15 +1428,19 @@
 
 <!-- ─────────── NAV ─────────── -->
 <nav class="top">
-  <div class="wrap row">
+  <div class="nav-float">
+    <div class="nav-glass">
     <a href="#" class="brand">
       <img src="logo.png" alt="TooDesktop" class="brand-mark" />
       <span>TooDesktop</span>
     </a>
     <div class="nav-center">
       <a href="#wizard">How it works</a>
+      <a href="#demo">Demo</a>
       <a href="#wall">Templates</a>
       <a href="#pricing">Pricing</a>
+      <a href="blogs.html">Blogs</a>
+      <a href="about.html">About</a>
       <a href="#faq">FAQ</a>
     </div>
     <div class="nav-right">
@@ -985,18 +1480,24 @@
         </div>
       </div>
     </div>
+    </div>
   </div>
 </nav>
 
+<main id="main-content">
+
 <!-- ─────────── 1. HERO ─────────── -->
 <section class="hero">
-  <div class="mesh"></div>
-  <div class="mesh-dot"></div>
-  <div class="orb blue orb-1"></div>
-  <div class="orb violet orb-2"></div>
-  <div class="orb cyan orb-3"></div>
+  <div class="hero-motion" aria-hidden="true">
+    <div class="hero-motion-glow"></div>
+    <div class="mesh"></div>
+    <div class="mesh-dot"></div>
+    <div class="orb blue orb-1"></div>
+    <div class="orb violet orb-2"></div>
+    <div class="orb cyan orb-3"></div>
+  </div>
 
-  <div class="wrap" style="position: relative; z-index: 2;">
+  <div class="wrap">
     <div class="hero-inner">
       <div class="hero-pill">
         <span class="b">New</span>
@@ -1017,9 +1518,8 @@
         <a class="btn btn-primary btn-lg" href="#" data-open-signup>
           Start free trial
         </a>
-        <a class="btn btn-secondary btn-lg" href="#wizard">
-          See how it works
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        <a class="btn btn-secondary btn-lg" href="https://github.com/ghanshyamrao/DesktopAppBuilder/releases/download/1.0.0/WebToDesktop.Builder.Setup.1.0.0.exe" download>
+          Download for Windows
         </a>
       </div>
 
@@ -1042,13 +1542,91 @@
 </section>
 
 <!-- ─────────── 2. SCROLL-PINNED WIZARD ─────────── -->
+<!-- Demo reel -->
+<section id="demo" class="demo-reel">
+  <div class="mesh"></div>
+  <div class="wrap" style="position: relative; z-index: 1;">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow reveal">Product demo</div>
+        <h2 class="h-section reveal">See TooDesktop in motion</h2>
+        <p class="lede reveal">Watch the full walkthrough — builder, app preview, and release-ready desktop output.</p>
+      </div>
+      <button class="music-toggle reveal" type="button" aria-pressed="false" data-music-toggle>
+        <svg class="music-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        <span>Play music</span>
+      </button>
+    </div>
+
+    <div class="demo-grid">
+      <article class="demo-card featured reveal">
+        <div class="demo-video-frame">
+          <iframe
+            id="demo-youtube-embed"
+            title="TooDesktop product demo on YouTube"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen
+            loading="lazy"
+            referrerpolicy="strict-origin-when-cross-origin"
+          ></iframe>
+        </div>
+        <div class="demo-caption">
+          <h3>Watch the full demo</h3>
+          <p>See the builder, app preview, and installer flow in one walkthrough. <a href="https://youtu.be/nnZBWnh80iE" target="_blank" rel="noopener noreferrer">Open on YouTube</a></p>
+        </div>
+      </article>
+
+      <article class="demo-card reveal">
+        <button class="demo-video-frame demo-poster-frame" type="button" data-open-demo data-demo-title="Tune the app experience" aria-label="Play TooDesktop demo — app studio">
+          <img src="screenshots/App Studio.png" alt="TooDesktop app studio preview" width="640" height="400" loading="lazy" decoding="async" />
+          <span class="demo-play-icon" aria-hidden="true">
+            <svg width="52" height="52" viewBox="0 0 24 24" fill="currentColor"><polygon points="8 5 19 12 8 19 8 5"/></svg>
+          </span>
+        </button>
+        <div class="demo-caption">
+          <h3>Tune the app experience</h3>
+          <p>Preview screens, adjust native behavior, and make the wrapped product feel like a focused desktop app.</p>
+        </div>
+      </article>
+
+      <article class="demo-card reveal">
+        <button class="demo-video-frame demo-poster-frame" type="button" data-open-demo data-demo-title="Ship a polished installer" aria-label="Play TooDesktop demo — theme and installer">
+          <img src="screenshots/Theme Builder.png" alt="TooDesktop theme builder and installer" width="640" height="400" loading="lazy" decoding="async" />
+          <span class="demo-play-icon" aria-hidden="true">
+            <svg width="52" height="52" viewBox="0 0 24 24" fill="currentColor"><polygon points="8 5 19 12 8 19 8 5"/></svg>
+          </span>
+        </button>
+        <div class="demo-caption">
+          <h3>Ship a polished installer</h3>
+          <p>Finish with a real desktop package your users can install, launch, and keep in their workflow.</p>
+        </div>
+      </article>
+    </div>
+  </div>
+  <audio id="background-music" src="media/background-music.mp3" loop preload="none"></audio>
+</section>
+
+<div class="video-modal" id="video-modal" role="dialog" aria-modal="true" aria-labelledby="video-modal-title">
+  <div class="video-modal-card">
+    <div class="video-modal-head">
+      <div class="video-modal-title" id="video-modal-title">TooDesktop demo</div>
+      <button class="video-modal-close" id="video-modal-close" type="button" aria-label="Close demo video">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="video-modal-body" id="video-modal-body"></div>
+  </div>
+</div>
+
 <section id="wizard" class="wizard">
-  <div class="orb violet orb-w1"></div>
-  <div class="orb blue orb-w2"></div>
+  <div class="wizard-bg" aria-hidden="true">
+    <div class="orb violet orb-w1"></div>
+    <div class="orb blue orb-w2"></div>
+  </div>
 
   <div class="wizard-sticky">
     <div class="wizard-copy">
-      <div class="stage-copy" data-stage="0">
+      <div class="stage-copy active" data-stage="0">
         <div class="stage-eyebrow"><span class="num">1</span> Step one</div>
         <h2>Paste any <span class="text-gradient">URL</span></h2>
         <p>Notion, Linear, Figma, YouTube, your internal admin panel — anything that runs in a browser becomes a real native window. No build chain, no boilerplate.</p>
@@ -1089,7 +1667,7 @@
 
         <div class="mock-body">
           <!-- Stage 1 — URL -->
-          <div class="stage-mock" data-stage="0">
+          <div class="stage-mock active" data-stage="0">
             <div class="s-label">App URL</div>
             <div class="s1-input">
               <svg class="lock" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
@@ -1237,7 +1815,7 @@
           <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Action Builder (tray, shortcuts)</li>
           <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Auto-converts to Monthly on day 15</li>
         </ul>
-        <button class="btn btn-secondary" data-open-signup>Start free trial</button>
+        <a class="btn btn-secondary" href="https://github.com/ghanshyamrao/DesktopAppBuilder/releases/download/1.0.0/WebToDesktop.Builder.Setup.1.0.0.exe" download>Download for Windows</a>
       </div>
 
       <div class="price-card featured reveal">
@@ -1251,7 +1829,7 @@
           <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Custom CSS / JS injection</li>
           <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Code signing + GitHub Releases publish</li>
         </ul>
-        <button class="btn btn-primary" data-open-signup>Subscribe monthly</button>
+        <a class="btn btn-primary" href="https://github.com/ghanshyamrao/DesktopAppBuilder/releases/download/1.0.0/WebToDesktop.Builder.Setup.1.0.0.exe" download>Download for Windows</a>
       </div>
 
       <div class="price-card lifetime reveal">
@@ -1265,7 +1843,7 @@
           <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Priority support</li>
           <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Lifetime updates — never pay again</li>
         </ul>
-        <button class="btn btn-primary" data-open-signup>Get lifetime</button>
+        <a class="btn btn-primary" href="https://github.com/ghanshyamrao/DesktopAppBuilder/releases/download/1.0.0/WebToDesktop.Builder.Setup.1.0.0.exe" download>Download for Windows</a>
       </div>
     </div>
 
@@ -1276,6 +1854,41 @@
 </section>
 
 <!-- ─────────── 6. FAQ ─────────── -->
+<!-- Blog preview -->
+<section id="blogs" class="blogs">
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow reveal">From the blog</div>
+        <h2 class="h-section reveal">Build better desktop apps from web products</h2>
+        <p class="lede reveal">Practical notes on packaging, release workflows, and making wrapped web apps feel native.</p>
+      </div>
+      <a class="btn btn-secondary reveal" href="blogs.html">View all blogs</a>
+    </div>
+
+    <div class="blog-grid">
+      <a class="blog-card reveal" href="blogs.html#web-to-desktop">
+        <span class="blog-tag">Guide</span>
+        <h3>How to turn a website into a desktop app</h3>
+        <p>What to check before wrapping a URL: app shell, permissions, updater strategy, and the small native touches users notice.</p>
+        <div class="blog-meta">5 min read</div>
+      </a>
+      <a class="blog-card reveal" href="blogs.html#electron-release">
+        <span class="blog-tag">Release</span>
+        <h3>A simple Electron release checklist</h3>
+        <p>A calm preflight for icons, signing, installer names, versioning, and download links before you ship.</p>
+        <div class="blog-meta">4 min read</div>
+      </a>
+      <a class="blog-card reveal" href="blogs.html#native-feel">
+        <span class="blog-tag">Design</span>
+        <h3>Make your wrapped app feel native</h3>
+        <p>Use window chrome, shortcuts, tray actions, and thoughtful loading states to make a web app feel at home on desktop.</p>
+        <div class="blog-meta">6 min read</div>
+      </a>
+    </div>
+  </div>
+</section>
+
 <section id="faq" class="faq">
   <div class="wrap-narrow">
     <div class="eyebrow reveal" style="text-align:center;display:block;">Common questions</div>
@@ -1322,11 +1935,13 @@
     <h2 class="h-section">Ship your first <span class="text-gradient">desktop app</span> today</h2>
     <p class="lede">Pick a template, paste a URL, hit build. The whole flow takes under a minute — and the installer is yours to keep.</p>
     <div class="hero-ctas" style="margin-top: 8px;">
-      <a class="btn btn-primary btn-lg" href="#" data-open-signup>Start your free trial</a>
+      <a class="btn btn-primary btn-lg" href="https://github.com/ghanshyamrao/DesktopAppBuilder/releases/download/1.0.0/WebToDesktop.Builder.Setup.1.0.0.exe" download>Download for Windows</a>
       <a class="btn btn-secondary btn-lg" href="#" data-open-signin>Sign in</a>
     </div>
   </div>
 </section>
+
+</main>
 
 <!-- ─────────── 8. FOOTER ─────────── -->
 <footer class="bottom">
@@ -1343,8 +1958,10 @@
         <h5>Product</h5>
         <ul>
           <li><a href="#wizard">How it works</a></li>
+          <li><a href="#demo">Demo</a></li>
           <li><a href="#wall">Templates</a></li>
           <li><a href="#pricing">Pricing</a></li>
+          <li><a href="https://github.com/ghanshyamrao/DesktopAppBuilder/releases/download/1.0.0/WebToDesktop.Builder.Setup.1.0.0.exe" download>Download for Windows</a></li>
           <li><a href="#">Changelog</a></li>
         </ul>
       </div>
@@ -1353,7 +1970,7 @@
         <ul>
           <li><a href="#">Docs</a></li>
           <li><a href="#">SDK reference</a></li>
-          <li><a href="#">Blog</a></li>
+          <li><a href="blogs.html">Blogs</a></li>
           <li><a href="#faq">FAQ</a></li>
         </ul>
       </div>
@@ -1368,15 +1985,16 @@
       <div class="footer-col">
         <h5>Company</h5>
         <ul>
-          <li><a href="#">Contact</a></li>
+          <li><a href="about.html">About us</a></li>
+          <li><a href="mailto:ghanshyamrao108@gmail.com">Contact</a></li>
           <li><a href="#">Twitter</a></li>
-          <li><a href="#">GitHub</a></li>
+          <li><a href="https://github.com/ghanshyamrao/DesktopAppBuilder" rel="noopener">GitHub</a></li>
         </ul>
       </div>
     </div>
     <div class="footer-bottom">
-      <div>© 2026 TooDesktop, Inc.</div>
-      <div>Built with Electron, React &amp; a lot of coffee.</div>
+      <div>© 2026 TooDesktop, Inc. Developed by Ghanshyam Rao.</div>
+      <div>Support: <a href="mailto:ghanshyamrao108@gmail.com">ghanshyamrao108@gmail.com</a></div>
     </div>
   </div>
 </footer>
@@ -1440,27 +2058,33 @@
   <span id="toast-text">Signed in</span>
 </div>
 
+<button class="music-toggle floating-music" type="button" aria-pressed="false" data-music-toggle>
+  <svg class="music-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+  <span>Play music</span>
+</button>
+
 <script>
   // ═══════════════════════════════════════════════════════════════
-  //  PARALLAX SCROLL  — sets --scroll-y so CSS can react
+  //  HERO MOTION — pause when off-screen (saves CPU/GPU)
   // ═══════════════════════════════════════════════════════════════
-  let scrollY = 0, ticking = false;
-  function updateScroll() {
-    document.documentElement.style.setProperty("--scroll-y", scrollY);
-    ticking = false;
+  const heroMotion = document.querySelector(".hero-motion");
+  const heroSection = document.querySelector("section.hero");
+  if (heroMotion && heroSection) {
+    const heroMotionIo = new IntersectionObserver(([entry]) => {
+      heroMotion.classList.toggle("is-paused", !entry.isIntersecting);
+    }, { threshold: 0 });
+    heroMotionIo.observe(heroSection);
   }
-  window.addEventListener("scroll", () => {
-    scrollY = window.scrollY;
-    if (!ticking) { requestAnimationFrame(updateScroll); ticking = true; }
-  }, { passive: true });
 
   // ═══════════════════════════════════════════════════════════════
   //  STICKY NAV
   // ═══════════════════════════════════════════════════════════════
   const nav = document.querySelector("nav.top");
-  window.addEventListener("scroll", () => {
-    nav.classList.toggle("scrolled", window.scrollY > 8);
-  }, { passive: true });
+  function updateNavScroll() {
+    nav.classList.toggle("scrolled", window.scrollY > 24);
+  }
+  window.addEventListener("scroll", updateNavScroll, { passive: true });
+  updateNavScroll();
 
   // ═══════════════════════════════════════════════════════════════
   //  REVEAL-ON-SCROLL
@@ -1471,6 +2095,109 @@
     }
   }, { threshold: 0.12, rootMargin: "0px 0px -40px 0px" });
   for (const el of document.querySelectorAll(".reveal")) io.observe(el);
+
+  const DEMO_YOUTUBE_ID = "nnZBWnh80iE";
+  const DEMO_YOUTUBE_WATCH = `https://youtu.be/${DEMO_YOUTUBE_ID}`;
+
+  function getDemoYoutubeEmbedUrl(autoplay) {
+    const origin = (location.origin && location.protocol !== "file:")
+      ? location.origin
+      : "https://toodesktop.com";
+    const params = new URLSearchParams({
+      rel: "0",
+      modestbranding: "1",
+      playsinline: "1",
+      origin,
+    });
+    if (autoplay) params.set("autoplay", "1");
+    return `https://www.youtube.com/embed/${DEMO_YOUTUBE_ID}?${params}`;
+  }
+
+  function createDemoYoutubeIframe(autoplay) {
+    const iframe = document.createElement("iframe");
+    iframe.src = getDemoYoutubeEmbedUrl(autoplay);
+    iframe.title = "TooDesktop product demo on YouTube";
+    iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+    iframe.allowFullscreen = true;
+    iframe.loading = "lazy";
+    iframe.setAttribute("referrerpolicy", "strict-origin-when-cross-origin");
+    return iframe;
+  }
+
+  const demoYoutubeEmbed = document.getElementById("demo-youtube-embed");
+  if (demoYoutubeEmbed) demoYoutubeEmbed.src = getDemoYoutubeEmbedUrl(false);
+
+  const videoModal = document.getElementById("video-modal");
+  const videoModalBody = document.getElementById("video-modal-body");
+  const videoModalClose = document.getElementById("video-modal-close");
+  const videoModalTitle = document.getElementById("video-modal-title");
+  let demoModalIframe = null;
+
+  function closeVideoModal() {
+    if (!videoModal) return;
+    videoModal.classList.remove("open");
+    if (demoModalIframe) {
+      demoModalIframe.remove();
+      demoModalIframe = null;
+    }
+    videoModalBody?.replaceChildren();
+    document.body.style.overflow = "";
+  }
+
+  function openVideoModal(title) {
+    if (!videoModal || !videoModalBody) return;
+    if (videoModalTitle) videoModalTitle.textContent = title || "TooDesktop demo";
+    demoModalIframe = createDemoYoutubeIframe(true);
+    videoModalBody.appendChild(demoModalIframe);
+    videoModal.classList.add("open");
+    document.body.style.overflow = "hidden";
+  }
+
+  document.querySelectorAll("[data-open-demo]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      if (location.protocol === "file:") {
+        window.open(DEMO_YOUTUBE_WATCH, "_blank", "noopener,noreferrer");
+        return;
+      }
+      openVideoModal(btn.dataset.demoTitle || "TooDesktop demo");
+    });
+  });
+  if (videoModalClose) videoModalClose.addEventListener("click", closeVideoModal);
+  if (videoModal) {
+    videoModal.addEventListener("click", (event) => {
+      if (event.target === videoModal) closeVideoModal();
+    });
+  }
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && videoModal?.classList.contains("open")) closeVideoModal();
+  });
+
+  const music = document.getElementById("background-music");
+  const musicToggles = Array.from(document.querySelectorAll("[data-music-toggle]"));
+  function renderMusicButtons(isPlaying, labelOverride) {
+    for (const button of musicToggles) {
+      button.classList.toggle("playing", isPlaying);
+      button.setAttribute("aria-pressed", isPlaying ? "true" : "false");
+      const label = button.querySelector("span");
+      if (label) label.textContent = labelOverride || (isPlaying ? "Pause music" : "Play music");
+    }
+  }
+  if (music && musicToggles.length) {
+    music.volume = 0.22;
+    musicToggles.forEach((musicToggle) => musicToggle.addEventListener("click", async () => {
+      if (music.paused) {
+        try {
+          await music.play();
+          renderMusicButtons(true);
+        } catch {
+          renderMusicButtons(false, "Music blocked");
+        }
+      } else {
+        music.pause();
+        renderMusicButtons(false);
+      }
+    }));
+  }
 
   // ═══════════════════════════════════════════════════════════════
   //  THEME TOGGLE — persisted in localStorage
@@ -1496,55 +2223,58 @@
   //  SCROLL-PINNED WIZARD STAGES
   // ═══════════════════════════════════════════════════════════════
   const wizardSection = document.getElementById("wizard");
-  const stageCopies   = wizardSection.querySelectorAll(".stage-copy");
-  const stageMocks    = wizardSection.querySelectorAll(".stage-mock");
-  const wpBars        = wizardSection.querySelectorAll(".wp-bar");
-  const wpLabel       = wizardSection.querySelector("[data-progress-label]");
-  const mockTitleEl   = wizardSection.querySelector("[data-mock-title]");
-  const typedEl       = wizardSection.querySelector("[data-typed]");
-  const STAGE_TITLES = [
-    "TooDesktop — New project",
-    "TooDesktop — Pick a theme",
-    "TooDesktop — Building Notion",
-    "TooDesktop — Done"
-  ];
-  const TYPE_TARGET = "https://notion.so";
-  const STAGES = 4;
+  if (wizardSection) {
+    const stageCopies   = wizardSection.querySelectorAll(".stage-copy");
+    const stageMocks    = wizardSection.querySelectorAll(".stage-mock");
+    const wpBars        = wizardSection.querySelectorAll(".wp-bar");
+    const wpLabel       = wizardSection.querySelector("[data-progress-label]");
+    const mockTitleEl   = wizardSection.querySelector("[data-mock-title]");
+    const typedEl       = wizardSection.querySelector("[data-typed]");
+    const STAGE_TITLES = [
+      "TooDesktop — New project",
+      "TooDesktop — Pick a theme",
+      "TooDesktop — Building Notion",
+      "TooDesktop — Done"
+    ];
+    const TYPE_TARGET = "https://notion.so";
+    const STAGES = 4;
 
-  let lastStage = -1, typeIv;
-  function setStage(stage) {
-    if (stage === lastStage) return;
-    stageCopies.forEach((el, i) => el.classList.toggle("active", i === stage));
-    stageMocks.forEach((el, i)  => el.classList.toggle("active", i === stage));
-    wpBars.forEach((el, i) => {
-      el.classList.toggle("current", i === stage);
-      el.classList.toggle("done", i < stage);
-    });
-    if (wpLabel) wpLabel.textContent = String(stage + 1).padStart(2, "0") + " / 04";
-    if (mockTitleEl) mockTitleEl.textContent = STAGE_TITLES[stage];
-    if (stage === 0 && typedEl) {
-      clearInterval(typeIv);
-      typedEl.textContent = "";
-      let i = 0;
-      typeIv = setInterval(() => {
-        typedEl.textContent = TYPE_TARGET.slice(0, ++i);
-        if (i >= TYPE_TARGET.length) clearInterval(typeIv);
-      }, 60);
+    let lastStage = -1, typeIv;
+    function setStage(stage) {
+      if (stage === lastStage) return;
+      stageCopies.forEach((el, i) => el.classList.toggle("active", i === stage));
+      stageMocks.forEach((el, i)  => el.classList.toggle("active", i === stage));
+      wpBars.forEach((el, i) => {
+        el.classList.toggle("current", i === stage);
+        el.classList.toggle("done", i < stage);
+      });
+      if (wpLabel) wpLabel.textContent = String(stage + 1).padStart(2, "0") + " / 04";
+      if (mockTitleEl) mockTitleEl.textContent = STAGE_TITLES[stage];
+      if (stage === 0 && typedEl) {
+        clearInterval(typeIv);
+        typedEl.textContent = "";
+        let i = 0;
+        typeIv = setInterval(() => {
+          typedEl.textContent = TYPE_TARGET.slice(0, ++i);
+          if (i >= TYPE_TARGET.length) clearInterval(typeIv);
+        }, 60);
+      }
+      lastStage = stage;
     }
-    lastStage = stage;
-  }
 
-  function updateWizard() {
-    const rect = wizardSection.getBoundingClientRect();
-    const vh = window.innerHeight;
-    const scrollable = wizardSection.offsetHeight - vh;
-    const p = Math.max(0, Math.min(1, -rect.top / scrollable));
-    let stage = Math.min(STAGES - 1, Math.floor(p * STAGES));
-    if (p >= 1) stage = STAGES - 1;
-    setStage(stage);
+    function updateWizard() {
+      const rect = wizardSection.getBoundingClientRect();
+      const vh = window.innerHeight;
+      const scrollable = Math.max(1, wizardSection.offsetHeight - vh);
+      const p = Math.max(0, Math.min(1, -rect.top / scrollable));
+      let stage = Math.min(STAGES - 1, Math.floor(p * STAGES));
+      if (p >= 0.99) stage = STAGES - 1;
+      setStage(stage);
+    }
+    window.addEventListener("scroll", updateWizard, { passive: true });
+    window.addEventListener("resize", updateWizard, { passive: true });
+    updateWizard();
   }
-  window.addEventListener("scroll", updateWizard, { passive: true });
-  setStage(0);
 
   // ═══════════════════════════════════════════════════════════════
   //  AUTH — modal + email/password + Google + localStorage state

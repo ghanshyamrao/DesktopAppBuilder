@@ -55,7 +55,8 @@ export type GatedFeatureKey =
   | "priority-support"
   | "theme-switch"
   | "notifications"
-  | "reveal-output";
+  | "reveal-output"
+  | "run-install";
 
 /** Which pricing tab the plan lives under in the renderer UI. */
 export type PricingPeriod = "monthly" | "yearly";
@@ -131,6 +132,10 @@ const MONTHLY_FEATURES: GatedFeatureKey[] = [
   "code-signing",
   "theme-switch",
   "notifications",
+  // Run / Install the built artifact directly from the dashboard's
+  // "..." menu. Trial users still have to go through the Export flow;
+  // paid users get the one-click affordance.
+  "run-install",
 ];
 
 const LIFETIME_FEATURES: GatedFeatureKey[] = [

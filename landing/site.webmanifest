@@ -1,0 +1,18 @@
+{
+  "name": "TooDesktop — Web to Desktop App Builder",
+  "short_name": "TooDesktop",
+  "description": "Convert any website into a native Electron desktop app for Windows, macOS, and Linux.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0b0b0f",
+  "theme_color": "#0b0b0f",
+  "lang": "en-US",
+  "icons": [
+    {
+      "src": "logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

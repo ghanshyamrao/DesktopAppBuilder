@@ -37,6 +37,10 @@ const api = {
     cancel: (buildId: string): Promise<IpcResult<void>> => ipcRenderer.invoke("builds:cancel", buildId),
     revealOutput: (projectId: string): Promise<IpcResult<void>> =>
       ipcRenderer.invoke("builds:revealOutput", projectId),
+    runApp: (projectId: string): Promise<IpcResult<void>> =>
+      ipcRenderer.invoke("builds:runApp", projectId),
+    installApp: (projectId: string): Promise<IpcResult<void>> =>
+      ipcRenderer.invoke("builds:installApp", projectId),
     getLogs: (projectId: string): Promise<IpcResult<BuildLogEvent[]>> =>
       ipcRenderer.invoke("builds:getLogs", projectId),
     export: (

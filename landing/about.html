@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>About TooDesktop - Web to Desktop App Builder</title>
+<meta name="description" content="TooDesktop is built by Ghanshyam Rao to help makers ship native Electron desktop apps from websites — without weeks of packaging and installer setup." />
+<meta name="robots" content="index, follow, max-image-preview:large" />
+<meta name="keywords" content="TooDesktop, about, web to desktop app builder, Electron desktop apps, Ghanshyam Rao" />
+<link rel="canonical" href="https://toodesktop.com/about.html" />
+<link rel="sitemap" type="application/xml" title="Sitemap" href="https://toodesktop.com/sitemap.xml" />
+<meta property="og:locale" content="en_US" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="TooDesktop" />
+<meta property="og:title" content="About TooDesktop — Web to Desktop App Builder" />
+<meta property="og:description" content="TooDesktop helps makers convert websites into native Electron desktop apps with a visual builder." />
+<meta property="og:url" content="https://toodesktop.com/about.html" />
+<meta property="og:image" content="https://toodesktop.com/logo.png" />
+<meta property="og:image:alt" content="TooDesktop logo" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="About TooDesktop" />
+<meta name="twitter:description" content="Learn who builds TooDesktop and why we made a visual website-to-desktop app builder." />
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "AboutPage",
+  "name": "About TooDesktop",
+  "url": "https://toodesktop.com/about.html",
+  "description": "TooDesktop is a visual desktop app builder that converts websites into native Electron apps.",
+  "isPartOf": { "@type": "WebSite", "name": "TooDesktop", "url": "https://toodesktop.com/" },
+  "breadcrumb": {
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://toodesktop.com/" },
+      { "@type": "ListItem", "position": 2, "name": "About", "item": "https://toodesktop.com/about.html" }
+    ]
+  }
+}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="icon" type="image/png" href="logo.png" />
+<style>
+  :root,
+  [data-theme="dark"] {
+    --bg: #0b0b0f;
+    --surface: rgba(22, 23, 30, 0.62);
+    --border: rgba(255, 255, 255, 0.08);
+    --border-strong: rgba(255, 255, 255, 0.16);
+    --text: #f5f5f7;
+    --text-mut: rgba(245, 245, 247, 0.64);
+    --text-dim: rgba(245, 245, 247, 0.42);
+    --accent-blue: #5b9dff;
+    --accent-violet: #a78bfa;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Inter", -apple-system, "Segoe UI", system-ui, sans-serif;
+    font-size: 15px; line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent-blue); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+  .wrap-narrow { max-width: 860px; margin: 0 auto; padding: 0 24px; }
+  .mesh {
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background:
+      radial-gradient(60% 40% at 10% -10%, rgba(167,139,250,0.18) 0%, transparent 60%),
+      radial-gradient(45% 35% at 100% 0%, rgba(34,211,238,0.10) 0%, transparent 60%),
+      radial-gradient(50% 45% at 50% 110%, rgba(91,157,255,0.12) 0%, transparent 60%);
+  }
+  .nav {
+    position: sticky; top: 0; z-index: 50;
+    backdrop-filter: blur(14px);
+    background: rgba(11, 11, 15, 0.72);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 64px; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 15px; color: var(--text); }
+  .brand:hover, .nav-back:hover { text-decoration: none; }
+  .brand-mark { width: 26px; height: 26px; border-radius: 7px; }
+  .nav-back { font-size: 14px; color: var(--text-mut); }
+  .nav-actions { display: flex; align-items: center; gap: 14px; }
+  .download-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    height: 38px; padding: 0 14px;
+    border-radius: 10px;
+    background: linear-gradient(180deg, var(--accent-blue), #3d7be0);
+    color: white; font-size: 13px; font-weight: 750;
+  }
+  .download-btn:hover { text-decoration: none; filter: brightness(1.08); }
+  main { position: relative; z-index: 1; }
+  .hero { padding: 86px 0 34px; text-align: center; }
+  .eyebrow {
+    display: inline-block;
+    font-size: 12px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--accent-violet);
+    padding: 6px 12px; border: 1px solid rgba(167, 139, 250, 0.3); border-radius: 999px;
+    margin-bottom: 18px;
+  }
+  h1 {
+    font-size: clamp(36px, 6vw, 58px);
+    font-weight: 800; letter-spacing: -0.025em; line-height: 1.05;
+    margin-bottom: 16px;
+    background: linear-gradient(135deg, #f5f5f7 0%, #a78bfa 100%);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .lede { color: var(--text-mut); font-size: 18px; max-width: 680px; margin: 0 auto; }
+  .content { padding: 32px 0 96px; }
+  .grid { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 18px; margin-top: 18px; }
+  @media (max-width: 780px) { .grid { grid-template-columns: 1fr; } }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    backdrop-filter: blur(16px);
+  }
+  .card h2 { font-size: 22px; margin-bottom: 12px; letter-spacing: -0.01em; }
+  .card p { color: var(--text-mut); margin-bottom: 14px; }
+  .stat { border-top: 1px solid var(--border); padding-top: 18px; margin-top: 18px; }
+  .stat strong { display: block; color: var(--text); font-size: 16px; }
+  .stat span { color: var(--text-dim); font-size: 13px; }
+  footer.bottom {
+    border-top: 1px solid var(--border);
+    background: rgba(11, 11, 15, 0.6);
+    padding: 36px 0;
+    position: relative; z-index: 1;
+  }
+  .foot-row {
+    display: flex; flex-wrap: wrap; gap: 16px;
+    align-items: center; justify-content: space-between;
+    color: var(--text-dim); font-size: 13.5px;
+  }
+  .foot-links { display: flex; flex-wrap: wrap; gap: 18px; }
+  .foot-links a { color: var(--text-mut); }
+  .foot-links a:hover { color: var(--text); text-decoration: none; }
+</style>
+</head>
+<body>
+<div class="mesh"></div>
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a href="index.html" class="brand">
+      <img src="logo.png" alt="TooDesktop" class="brand-mark" />
+      <span>TooDesktop</span>
+    </a>
+    <div class="nav-actions">
+      <a href="index.html" class="nav-back">Back to home</a>
+    </div>
+  </div>
+</nav>
+
+<main>
+  <section class="hero">
+    <div class="wrap-narrow">
+      <span class="eyebrow">About us</span>
+      <h1>Desktop app building, made approachable.</h1>
+      <p class="lede">TooDesktop helps makers, founders, and teams turn web products into polished desktop apps without starting from a blank Electron project.</p>
+    </div>
+  </section>
+
+  <section class="content">
+    <div class="wrap-narrow grid">
+      <article class="card">
+        <h2>Why TooDesktop exists</h2>
+        <p>Shipping a desktop app should not require weeks of build scripts, installer setup, and platform packaging work. TooDesktop brings those pieces into one visual workflow so you can focus on the product your users already love.</p>
+        <p>Paste a URL, choose a starter, tune the theme, add desktop actions, and build installers for distribution.</p>
+        <p><a href="https://github.com/ghanshyamrao/DesktopAppBuilder/releases/download/1.0.0/WebToDesktop.Builder.Setup.1.0.0.exe" class="download-btn" download>Download for Windows</a></p>
+      </article>
+      <aside class="card">
+        <h2>Project details</h2>
+        <div class="stat">
+          <strong>Developed by Ghanshyam Rao</strong>
+          <span>Creator and maintainer of TooDesktop.</span>
+        </div>
+        <div class="stat">
+          <strong>Support email</strong>
+          <span><a href="mailto:ghanshyamrao108@gmail.com">ghanshyamrao108@gmail.com</a></span>
+        </div>
+      </aside>
+    </div>
+  </section>
+</main>
+
+<footer class="bottom">
+  <div class="wrap foot-row">
+    <div>© 2026 TooDesktop. Developed by Ghanshyam Rao.</div>
+    <div class="foot-links">
+      <a href="index.html">Home</a>
+      <a href="blogs.html">Blogs</a>
+      <a href="https://github.com/ghanshyamrao/DesktopAppBuilder/releases/download/1.0.0/WebToDesktop.Builder.Setup.1.0.0.exe" download>Download for Windows</a>
+      <a href="terms.html">Terms</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="refund.html">Refund</a>
+    </div>
+  </div>
+</footer>
+</body>
+</html>

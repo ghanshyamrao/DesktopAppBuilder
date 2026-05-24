@@ -31,6 +31,7 @@ const FEATURE_LABEL_SHORT: Record<GatedFeatureKey, string> = {
   "theme-switch":     "Light / Dark / Custom theme",
   "notifications":    "In-app notifications",
   "reveal-output":    "Reveal output folder",
+  "run-install":      "Run / Install builds from dashboard",
 };
 
 /** "10 / day", "Unlimited builds", "—". */

@@ -162,6 +162,97 @@ export class BuildOrchestrator {
     }
   }
 
+  /**
+   * Launch the unpacked executable from the project's last build without
+   * going through the installer. Looks for, in order:
+   *   - Windows: the .exe inside dist/win-unpacked/
+   *   - macOS:   the .app bundle inside dist/mac* /
+   *   - Linux:   the AppImage at the top of dist/ (single-file runnable)
+   * Hands the target to shell.openPath so the OS spawns it the same way
+   * a double-click would.
+   */
+  async runApp(projectId: string): Promise<void> {
+    const distDir = path.join(this.store.workspaceDir(projectId), "dist");
+    if (!(await fs.pathExists(distDir))) {
+      throw new Error("No build output found. Build the app first.");
+    }
+
+    let target: string | null = null;
+
+    if (process.platform === "win32") {
+      const unpacked = path.join(distDir, "win-unpacked");
+      if (await fs.pathExists(unpacked)) {
+        const entries = await fs.readdir(unpacked, { withFileTypes: true });
+        const exe = entries.find((e) => e.isFile() && e.name.toLowerCase().endsWith(".exe"));
+        if (exe) target = path.join(unpacked, exe.name);
+      }
+    } else if (process.platform === "darwin") {
+      const entries = await fs.readdir(distDir, { withFileTypes: true });
+      for (const e of entries) {
+        if (!e.isDirectory()) continue;
+        if (!/^mac/i.test(e.name)) continue;
+        const sub = await fs.readdir(path.join(distDir, e.name), { withFileTypes: true });
+        const appBundle = sub.find((s) => s.isDirectory() && s.name.toLowerCase().endsWith(".app"));
+        if (appBundle) { target = path.join(distDir, e.name, appBundle.name); break; }
+      }
+    } else {
+      const entries = await fs.readdir(distDir, { withFileTypes: true });
+      const appImage = entries.find((e) => e.isFile() && /\.AppImage$/i.test(e.name));
+      if (appImage) target = path.join(distDir, appImage.name);
+    }
+
+    if (!target) {
+      throw new Error(
+        "No runnable build artifact found. Rebuild the project, then try Run again.",
+      );
+    }
+
+    // Detached launch so the child outlives the builder. On Windows
+    // shell.openPath uses ShellExecute, which is what double-clicking does.
+    const err = await shell.openPath(target);
+    if (err) throw new Error(err);
+  }
+
+  /**
+   * Open the installer artifact from the project's last build so the OS
+   * runs it (NSIS / MSI on Windows, .dmg on macOS, .AppImage/.deb/.rpm on
+   * Linux). Different file from `runApp` — that one launches the unpacked
+   * .exe directly without installing.
+   */
+  async installApp(projectId: string): Promise<void> {
+    const distDir = path.join(this.store.workspaceDir(projectId), "dist");
+    if (!(await fs.pathExists(distDir))) {
+      throw new Error("No build output found. Build the app first.");
+    }
+
+    const entries = await fs.readdir(distDir, { withFileTypes: true });
+    const files = entries.filter((e) => e.isFile()).map((e) => e.name);
+
+    // Prefer NSIS "*Setup*.exe" / .msi on Windows; .dmg on macOS; AppImage /
+    // .deb / .rpm / .snap on Linux. Fall back to any installer-like artifact
+    // if the platform-preferred one isn't present (cross-built outputs).
+    const prefer =
+      process.platform === "win32"
+        ? [/setup.*\.exe$/i, /\.msi$/i, /\.exe$/i]
+      : process.platform === "darwin"
+        ? [/\.dmg$/i, /\.pkg$/i]
+        : [/\.AppImage$/i, /\.deb$/i, /\.rpm$/i, /\.snap$/i];
+
+    let chosen: string | null = null;
+    for (const re of prefer) {
+      const match = files.find((f) => re.test(f));
+      if (match) { chosen = match; break; }
+    }
+    if (!chosen) {
+      throw new Error(
+        "No installer artifact found in the build output. Rebuild the project, then try Install again.",
+      );
+    }
+
+    const err = await shell.openPath(path.join(distDir, chosen));
+    if (err) throw new Error(err);
+  }
+
   async exportTo(projectId: string, destDir: string): Promise<string[]> {
     const distDir = path.join(this.store.workspaceDir(projectId), "dist");
     if (!(await fs.pathExists(distDir))) {

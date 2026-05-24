@@ -60,8 +60,15 @@ landing/
 
 Search `index.html` for:
 
-- `href="#download"` — point at your actual download URL
 - `href="#"` (in footer + final CTA) — point at GitHub repo / X / etc.
 - `© 2026 Web2Desktop` — update the year if needed
-- `<title>` — change if you want a different SEO title
 - The hero `eyebrow` text "v1.0.0 · Now in beta" — update on release
+
+## SEO (already wired)
+
+- **Meta + Open Graph + Twitter** on `index.html`, `about.html`, `blogs.html`, and legal pages
+- **JSON-LD**: Organization, WebSite, SoftwareApplication (with `downloadUrl`), FAQPage on home; BlogPosting list on `blogs.html`; breadcrumbs on inner pages
+- **`sitemap.xml`** and **`robots.txt`** (checkout pages disallowed)
+- **`site.webmanifest`** for name/theme when saved to home screen
+
+After deploy, submit `https://toodesktop.com/sitemap.xml` in [Google Search Console](https://search.google.com/search-console) and Bing Webmaster Tools. Rankings still depend on backlinks, content, and crawl frequency — keep publishing on `blogs.html` and link from social/GitHub.

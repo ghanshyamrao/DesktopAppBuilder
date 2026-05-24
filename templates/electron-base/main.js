@@ -328,6 +328,18 @@ try {
 
 // Actions config — all native capability flags. Backwards-compatible with the
 // old `features` block; we merge so existing builds keep working.
+const APP_DISPLAY_NAME = String(config.name || "App").trim() || "App";
+
+try {
+  app.setName(APP_DISPLAY_NAME);
+  if (process.platform === "win32") {
+    // Windows uses this as the notification app label.
+    app.setAppUserModelId(APP_DISPLAY_NAME);
+  }
+} catch {
+  /* best-effort branding */
+}
+
 const actions = Object.assign(
   {
     applicationMenu: true,
@@ -460,10 +472,16 @@ let tray = null;
 let quitting = false;
 
 function showWindow() {
-  if (!mainWindow) return;
+  if (!mainWindow || mainWindow.isDestroyed()) {
+    mainWindow = createWindow();
+    return;
+  }
   if (mainWindow.isMinimized()) mainWindow.restore();
   mainWindow.show();
   mainWindow.focus();
+  if (contentView && contentView.webContents && !contentView.webContents.isDestroyed()) {
+    contentView.webContents.focus();
+  }
 }
 
 function toggleWindow() {
@@ -813,6 +831,14 @@ function createWindow() {
   // Inherit UA + smart handlers + auto-close-on-callback into popups.
   view.webContents.on("did-create-window", (childWindow, details) => {
     bindOAuthChild(view, childWindow, details && details.url, effectiveUA);
+  });
+
+  // Website-origin notifications can focus the embedded web contents without
+  // raising our outer BrowserWindow. Bridge that focus back to the app shell.
+  view.webContents.on("focus", () => {
+    if (mainWindow && !mainWindow.isDestroyed() && !mainWindow.isFocused()) {
+      showWindow();
+    }
   });
 
   // Update toolbar back/forward state on every navigation. Both events

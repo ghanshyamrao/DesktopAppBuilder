@@ -159,9 +159,13 @@ export const api = {
       //    left. Skipped entirely when the PostHog `feature-billing` flag
       //    is off — that mode is for super-admin / dev testing where
       //    enforcement must be inert end-to-end (gate + usage counter).
+      //    Also skipped for admin users (PostHog `feature-admin-override`)
+      //    so the same dev-testing escape hatch works without flipping the
+      //    project-wide billing flag.
       const billingEnabled = isEnabled("billing");
+      const adminOverride = isEnabled("adminOverride");
       let usage: { used: number; limit: number | null } = { used: 0, limit: null };
-      if (billingEnabled) {
+      if (billingEnabled && !adminOverride) {
         const verdict = await unwrap(window.w2a.billing.recordBuild());
         if (!verdict.allowed) {
           // Notify the provider so it can navigate + toast. The thrown

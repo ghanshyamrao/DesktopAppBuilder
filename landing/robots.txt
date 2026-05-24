@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /checkout.html
+Disallow: /billing-success.html
+
+Sitemap: https://toodesktop.com/sitemap.xml
